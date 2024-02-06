@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block head %}
+<title>GoogleMap</title>
+{% endblock %}
+{% block style %}
+{% endblock %}
+{% block content %}
+<style>
+	#map {
+		height: 100%;
+		width: 100%;
+		/* Ensure the map takes the full width of its container */
+		overflow: hidden;
+		/* Prevent content overflow */
+		position: absolute;
+	}
+
+	#custom-infowindow {
+		position: absolute;
+		top: 10px;
+		/* Adjust the top position as needed */
+		left: 10px;
+		/* Adjust the left position as needed */
+		background-color: white;
+		padding: 30px;
+		border: 1px solid #ccc;
+		z-index: 1000;
+		/* Ensure it appears above the map */
+		border-radius: 10px;
+		padding: 1%;
+		font-size: 0.8rem;
+	}
+
+	.infobody p {
+		margin-bottom: 0.3rem;
+	}
+</style>
+
+<div class="">
+	<div id="map"></div>
+	<div id="custom-infowindow"></div>
+	<script
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&libraries=places&loading=async"></script>
+	<script>
+		var type_data_str = "{{ map_data.type }}";
+		var rent_data_str = "{{ map_data.rent }}";
+		var manageFee_data_str = "{{ map_data.manageFee }}";
+		var serviceFee_data_str = "{{ map_data.serviceFee }}";
+		var builtYear_data_str = "{{ map_data.builtYear }}";
+		var partArea_data_str = "{{ map_data.partArea }}";
+		var mPrice_data_str = "{{ map_data.mPrice }}";
+		var averPrice_data_str = "{{ map_data.averPrice }}";
+		var address_data_str = "{{ map_data.address }}";
+		var name_data_str = "{{ map_data.name }}";
+		var station_data_str = "{{ map_data.station }}";
+		var trade_data_str = "{{ map_data.trade }}";
+		var phone_data_str = "{{ map_data.phone }}";
+
+		var type_data = type_data_str.split(',');
+		var rent_data = rent_data_str.split(',');
+		var manageFee_data = manageFee_data_str.split(',');
+		var serviceFee_data = serviceFee_data_str.split(',');
+		var builtYear_data = builtYear_data_str.split(',');
+		var partArea_data = partArea_data_str.split(',');
+		var mPrice_data = mPrice_data_str.split(',');
+		var averPrice_data = averPrice_data_str.split(',');
+		var address_data = address_data_str.split(',');
+		var name_data = name_data_str.split(',');
+		var station_data = station_data_str.split(',');
+		var trade_data = trade_data_str.split(',');
+		var phone_data = phone_data_str.split(',');
+
+		function initMap() {
+			var map = new google.maps.Map(document.getElementById('map'), {
+				// center: { lat: 35.661777, lng: 139.704051 }, // Center the map at a specific location
+				zoom: 16,
+				mapTypeControl: false, // Hide map type control
+				mapTypeControlOptions: {
+					mapTypeIds: [] // Hide satellite control
+				}
+			});
+
+			var bounds = new google.maps.LatLngBounds();
+			var customWindow = document.getElementById('custom-infowindow')
+			var infowindow = new google.maps.InfoWindow(
+				// {
+				// pixelOffset: new google.maps.Size(0, -30) // Adjust the pixel offset as needed
+				// }
+			);
+			// Geocode each address and add a marker to the map
+			address_data.forEach(function (address, index) {
+				var geocoder = new google.maps.Geocoder();
+
+				geocoder.geocode({ 'address': address }, function (results, status) {
+					if (status === 'OK' && results.length > 0) {
+						var location = results[0].geometry.location;
+						console.log(address);
+						console.log(address.replace(/'/g, ''));
+						// Create a marker for each address
+						var marker = new google.maps.Marker({
+							position: location,
+							map: map,
+							title: address,
+							label: {
+								text: (index + 1).toString(),
+								color: 'white'
+							}
+						});
+						// Extend the bounds to include the marker's position
+						bounds.extend(marker.getPosition());
+
+						marker.addListener('click', function () {
+							// Set the content of the infowindow
+							customWindow.innerHTML = '<div><p style="font-size: 1rem; font-weight:bold;">No.'
+								+ (index+1) + '</p><hr/><div class="infobody">'
+								+ '<p>' + type_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + rent_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + manageFee_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + serviceFee_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + builtYear_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + partArea_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + mPrice_data[index].replace(/&#39;/g, '') + '</p><br>'
+								+ '<p>' + averPrice_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + address.replace(/&#39;/g, '') + '</p><br>'
+								+ '<p>' + name_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + station_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + trade_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '<p>' + phone_data[index].replace(/&#39;/g, '') + '</p>'
+								+ '</div></div>';
+							// Open the infowindow at the marker's position
+							// infowindow.setPosition(location);
+							// infowindow.open(map);
+						});
+					} else {
+						console.error('Geocode was not successful for the following reason:', status);
+					}
+					map.fitBounds(bounds);
+				});
+			});
+		}
+
+		initMap();
+
+	</script>
+</div>
+{% endblock %}
+{% block script %}
+<!-- <script src="sample.js"></script> -->
+<script type="text/javascript">
+	$(document).ready(function () {
+		console.log("|''''''''");
+	})
+</script>
+{% endblock %}
