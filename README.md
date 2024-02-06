@@ -51,6 +51,10 @@ This is the example project for implementing Forms with Django.
 
 		`
 			pip install -r requirements.txt
+			pip install django-multiselectfield
+			pip install selenium
+			pip install bs4
+			pip install webdriver_manager
 		`
 
 - cd to src and run the server

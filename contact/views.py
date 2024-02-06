@@ -220,10 +220,11 @@ def contactPage(request):
 
 def postContact(request):
 	if request.method == "POST":
-		print(request)
+		print("-------postContact--------")
+		print(request.POST)
 		form = ContactForm(request.POST)
 		print(form["userId"].value())
-		userId = form["userId"].value()
+		userId = form["userId"].value() 
 		password = form["password"].value()
 		trackName = form["trackName"].value()
 		stationFrom = form["stationFrom"].value()
@@ -235,12 +236,12 @@ def postContact(request):
 		level = form["level"].value()
 		built_year = form["built_year"].value()
 		built_month = form["built_month"].value()
-		etc_multi = form["etc_multi"].value()
-
+		etc_multi = form["etc_multi"].value() 
+	
 		res = scraping(userId, password, trackName, stationFrom, stationTo, distance, distanceType, priceMax, areaMin, level, built_year, built_month, etc_multi)
 		# form.save()
 		if res == '500OverError' or res == 'loginError' or res == 'Error':
-			return render(request, "contact.html", {'data' : res})
+			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'built_month' : built_month, 'etc_multi' : etc_multi})
 		else:
 			return render(request, "map.html", {'map_data' : res})
 

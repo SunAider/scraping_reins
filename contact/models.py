@@ -21,8 +21,9 @@ class Contact(models.Model):
 	built_month = models.DecimalField(max_digits=2, decimal_places = 0, blank=True)
 	# etc = models.TextField(blank=True)
 	etc_CHOICES =( 
+		("0", ""),
 		("1", "ペット相談"), 
-		("2", "事務所使用可")
+		("2", "事務所使用可"),
 	) 
 	etc_multi = MultiSelectField(choices = etc_CHOICES) 
 

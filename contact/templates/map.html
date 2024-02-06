@@ -39,8 +39,8 @@
 <div class="">
 	<div id="map"></div>
 	<div id="custom-infowindow"></div>
-	<script
-		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&libraries=places&loading=async"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&callback=initMap" async defer></script>
+	<!-- <script	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&libraries=places&loading=async"></script> -->
 	<script>
 		var type_data_str = "{{ map_data.type }}";
 		var rent_data_str = "{{ map_data.rent }}";
@@ -94,8 +94,8 @@
 				geocoder.geocode({ 'address': address }, function (results, status) {
 					if (status === 'OK' && results.length > 0) {
 						var location = results[0].geometry.location;
-						console.log(address);
-						console.log(address.replace(/'/g, ''));
+						// console.log(address);
+						// console.log(address.replace(/'/g, ''));
 						// Create a marker for each address
 						var marker = new google.maps.Marker({
 							position: location,

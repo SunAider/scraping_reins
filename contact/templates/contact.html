@@ -149,22 +149,28 @@
 			transform: rotate(360deg);
 		}
 	}
+
 	#id_etc_multi li {
-        list-style: none; /* Remove default list item marker */
-        margin-bottom: 10px; /* Adjust margin between items */
-    }
+		list-style: none;
+		/* Remove default list item marker */
+		margin-bottom: 10px;
+		/* Adjust margin between items */
+	}
 
-    #id_etc_multi label {
-        display: flex; 
-        align-items: center; /* Vertically center the checkbox and label */
+	#id_etc_multi label {
+		display: flex;
+		align-items: center;
+		/* Vertically center the checkbox and label */
 		flex-direction: row;
-        cursor: pointer; /* Set cursor to pointer for better UX */
-    }
+		cursor: pointer;
+		/* Set cursor to pointer for better UX */
+	}
 
-    #id_etc_multi input {
+	#id_etc_multi input {
 		width: 10%;
-        margin-left: 5px; /* Adjust margin between checkbox and label */
-    }
+		margin-left: 5px;
+		/* Adjust margin between checkbox and label */
+	}
 </style>
 {% endblock %}
 {% block script %}
@@ -173,25 +179,33 @@
 
 	// Show loading icon when a link is clicked
 	function showLoadingIcon() {
-		console.log("loading icon 1")
+		console.log("loading icon 1");
 		document.getElementById('loading-icon').style.display = 'block';
 	}
 	function submitForm() {
 		showLoadingIcon();
-		console.log("sbumit clicked");
+		console.log("submit clicked");
 		document.getElementById('contactForm').submit();
 		return false;
 	}
 	// Hide loading icon when the page has finished loading
 	window.onload = function () {
+		console.log("window onload");
 		document.getElementById('loading-icon').style.display = 'none';
 	};
 
+	// window.addEventListener('unload', function (event) {
+	// 	localStorage.clear();
+	// 	console.log("cleared");
+	// });
+
 	$(document).ready(function () {
 
-
 		$("#submit").hide();
-		var res = "{{data}}"
+		$("#id_etc_multi_0").hide();
+
+		var res = "{{data}}";
+		SaveFormData();
 		if (res == "500OverError") {
 			alert("検索結果が500件を超えています。検索条件入力画面に戻ります。")
 			window.location.href = '/'
@@ -203,7 +217,94 @@
 			window.location.href = '/'
 		} else {
 			$("#submit").show();
+			initForm();
 		}
+
+		function SaveFormData() {
+			var userId = "{{userId}}";
+			var password = "{{password}}";
+			var trackName = "{{trackName}}";
+			var stationFrom = "{{stationFrom}}";
+			var stationTo = "{{stationTo}}";
+			var distance = "{{distance}}";
+			var distanceType = "{{distanceType}}";
+			var priceMax = "{{priceMax}}";
+			var areaMin = "{{areaMin}}";
+			var level = "{{level}}";
+			var built_year = "{{built_year}}";
+			var built_month = "{{built_month}}";
+			var etc_multi = "{{etc_multi}}";
+
+			if (userId) {
+				// 	console.log("valid userId", userId);
+				localStorage.setItem("userId", userId);
+				localStorage.setItem("password", password);
+				localStorage.setItem("trackName", trackName);
+				localStorage.setItem("stationFrom", stationFrom);
+				localStorage.setItem("stationTo", stationTo);
+				localStorage.setItem("distance", distance);
+				localStorage.setItem("distanceType", distanceType);
+				localStorage.setItem("priceMax", priceMax);
+				localStorage.setItem("areaMin", areaMin);
+				localStorage.setItem("level", level);
+				localStorage.setItem("built_year", built_year);
+				localStorage.setItem("built_month", built_month);
+				localStorage.setItem("etc_multi", etc_multi.replace(/&#39;/g, ""));
+			}
+		}
+
+		function initForm() {
+			userId = localStorage.getItem("userId");
+			password = localStorage.getItem("password");
+			trackName = localStorage.getItem("trackName");
+			stationFrom = localStorage.getItem("stationFrom");
+			stationTo = localStorage.getItem("stationTo");
+			distance = localStorage.getItem("distance");
+			distanceType = localStorage.getItem("distanceType");
+			priceMax = localStorage.getItem("priceMax");
+			areaMin = localStorage.getItem("areaMin");
+			level = localStorage.getItem("level");
+			built_year = localStorage.getItem("built_year");
+			built_month = localStorage.getItem("built_month");
+			etc_multi = localStorage.getItem("etc_multi");
+
+			var userIdInput = document.getElementsByName("userId")[0];
+			var passwordInput = document.getElementsByName("password")[0];
+			var trackNameInput = document.getElementsByName("trackName")[0];
+			var stationFromInput = document.getElementsByName("stationFrom")[0];
+			var stationToInput = document.getElementsByName("stationTo")[0];
+			var distanceInput = document.getElementsByName("distance")[0];
+			var distanceTypeInput = document.getElementsByName("distanceType")[0];
+			var priceMaxInput = document.getElementsByName("priceMax")[0];
+			var areaMinInput = document.getElementsByName("areaMin")[0];
+			var levelInput = document.getElementsByName("level")[0];
+			var built_yearInput = document.getElementsByName("built_year")[0];
+			var built_monthInput = document.getElementsByName("built_month")[0];
+			var etc_multiInput_1 = document.getElementsByName("etc_multi")[1];
+			var etc_multiInput_2 = document.getElementsByName("etc_multi")[2];
+
+			userIdInput.value = userId;
+			passwordInput.value = password;
+			trackNameInput.value = trackName;
+			stationFromInput.value = stationFrom;
+			stationToInput.value = stationTo;
+			distanceInput.value = distance;
+			distanceTypeInput.value = distanceType;
+			priceMaxInput.value = priceMax;
+			areaMinInput.value = areaMin;
+			levelInput.value = level;
+			built_yearInput.value = built_year;
+			built_monthInput.value = built_month;
+			etc_multi_arr = JSON.parse(etc_multi);
+			if (etc_multi_arr.length == 2) {
+				etc_multiInput_1.checked = true;
+				etc_multiInput_2.checked = true;
+			} else if (etc_multi_arr.length == 1) {
+				if (etc_multi_arr[0] == '1') etc_multiInput_1.checked = true;
+				if (etc_multi_arr[0] == '2') etc_multiInput_2.checked = true;
+			}
+		}
+
 		// $("#contactForm").submit(function (e) {
 		// e.preventDefault();
 		// 	var serializedData = $(this).serialize();
@@ -234,6 +335,7 @@
 		// 		}
 		// 	})
 		// })
+
 	})
 </script>
 {% endblock %}
