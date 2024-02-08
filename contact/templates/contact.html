@@ -203,7 +203,6 @@
 
 		$("#submit").hide();
 		$("#id_etc_multi_0").hide();
-
 		var res = "{{data}}";
 		SaveFormData();
 		if (res == "500OverError") {
@@ -219,6 +218,22 @@
 			$("#submit").show();
 			initForm();
 		}
+		// always 分
+		var distanceTypeElement = document.getElementById("id_distanceType");
+		distanceTypeElement.value = '1';
+		var event = new Event('change');
+		distanceTypeElement.dispatchEvent(event);
+
+		// 
+		var inputElement = document.getElementById("id_priceMax");
+		inputElement.addEventListener("input", function (event) {
+			var value = event.target.value;
+			// Check if the value contains more than one decimal point
+			if ((value.match(/\./g) || []).length > 1) {
+				// If more than one decimal point is found, remove the last character from the input
+				event.target.value = value.slice(0, -1);
+			}
+		});
 
 		function SaveFormData() {
 			var userId = "{{userId}}";
@@ -228,11 +243,12 @@
 			var stationTo = "{{stationTo}}";
 			var distance = "{{distance}}";
 			var distanceType = "{{distanceType}}";
+			var priceMin = "{{priceMin}}";
 			var priceMax = "{{priceMax}}";
 			var areaMin = "{{areaMin}}";
 			var level = "{{level}}";
 			var built_year = "{{built_year}}";
-			var built_month = "{{built_month}}";
+			var roomMin = "{{roomMin}}";
 			var etc_multi = "{{etc_multi}}";
 
 			if (userId) {
@@ -244,11 +260,12 @@
 				localStorage.setItem("stationTo", stationTo);
 				localStorage.setItem("distance", distance);
 				localStorage.setItem("distanceType", distanceType);
+				localStorage.setItem("priceMin", priceMin);
 				localStorage.setItem("priceMax", priceMax);
 				localStorage.setItem("areaMin", areaMin);
 				localStorage.setItem("level", level);
 				localStorage.setItem("built_year", built_year);
-				localStorage.setItem("built_month", built_month);
+				localStorage.setItem("roomMin", roomMin);
 				localStorage.setItem("etc_multi", etc_multi.replace(/&#39;/g, ""));
 			}
 		}
@@ -261,11 +278,12 @@
 			stationTo = localStorage.getItem("stationTo");
 			distance = localStorage.getItem("distance");
 			distanceType = localStorage.getItem("distanceType");
+			priceMin = localStorage.getItem("priceMin");
 			priceMax = localStorage.getItem("priceMax");
 			areaMin = localStorage.getItem("areaMin");
 			level = localStorage.getItem("level");
 			built_year = localStorage.getItem("built_year");
-			built_month = localStorage.getItem("built_month");
+			roomMin = localStorage.getItem("roomMin");
 			etc_multi = localStorage.getItem("etc_multi");
 
 			var userIdInput = document.getElementsByName("userId")[0];
@@ -275,13 +293,15 @@
 			var stationToInput = document.getElementsByName("stationTo")[0];
 			var distanceInput = document.getElementsByName("distance")[0];
 			var distanceTypeInput = document.getElementsByName("distanceType")[0];
+			var priceMinInput = document.getElementsByName("priceMin")[0];
 			var priceMaxInput = document.getElementsByName("priceMax")[0];
 			var areaMinInput = document.getElementsByName("areaMin")[0];
 			var levelInput = document.getElementsByName("level")[0];
 			var built_yearInput = document.getElementsByName("built_year")[0];
-			var built_monthInput = document.getElementsByName("built_month")[0];
+			var roomMinInput = document.getElementsByName("roomMin")[0];
 			var etc_multiInput_1 = document.getElementsByName("etc_multi")[1];
 			var etc_multiInput_2 = document.getElementsByName("etc_multi")[2];
+			var etc_multiInput_3 = document.getElementsByName("etc_multi")[3];
 
 			userIdInput.value = userId;
 			passwordInput.value = password;
@@ -290,19 +310,24 @@
 			stationToInput.value = stationTo;
 			distanceInput.value = distance;
 			distanceTypeInput.value = distanceType;
+			priceMinInput.value = priceMin;
 			priceMaxInput.value = priceMax;
 			areaMinInput.value = areaMin;
 			levelInput.value = level;
 			built_yearInput.value = built_year;
-			built_monthInput.value = built_month;
+			roomMinInput.value = roomMin;
 			etc_multi_arr = JSON.parse(etc_multi);
-			if (etc_multi_arr.length == 2) {
-				etc_multiInput_1.checked = true;
-				etc_multiInput_2.checked = true;
-			} else if (etc_multi_arr.length == 1) {
-				if (etc_multi_arr[0] == '1') etc_multiInput_1.checked = true;
-				if (etc_multi_arr[0] == '2') etc_multiInput_2.checked = true;
-			}
+			if (etc_multi_arr?.length > 0) {
+				if (etc_multi_arr.includes(1)) {
+					etc_multiInput_1.checked = true;
+				}
+				if (etc_multi_arr.includes(2)) {
+					etc_multiInput_2.checked = true;
+				}
+				if (etc_multi_arr.includes(3)) {
+					etc_multiInput_3.checked = true;
+				}
+			} 
 		}
 
 		// $("#contactForm").submit(function (e) {

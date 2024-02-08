@@ -18,7 +18,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
 # Create your views here.
 
-def scraping(userId, password, trackName, stationFrom, stationTo, distance, distanceType, priceMax, areaMin, level, built_year, built_month, etc_multi):	
+def scraping(userId, password, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi):	
 	# driver = webdriver.Chrome('./chromedriver')
 	options = Options()
 	options.add_argument('--headless')
@@ -43,7 +43,7 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 	delay = 10 #seconds
 	style_condition = 'grid-row-start: 1; grid-column: 14 / span 11;'
 	style_condition2 = 'grid-row: 1 / span 2; grid-column-start: 1;'
-	result = {'address':[], 'type':[], 'rent':[], 'manageFee':[],'serviceFee':[],'builtYear':[],'partArea':[],'mPrice':[],'averPrice':[],'name':[],'station':[],'trade':[],'phone':[]}
+	result = {'address':[], 'type':[], 'rent':[], 'manageFee':[],'serviceFee':[],'roomMin':[],'partArea':[],'mPrice':[],'averPrice':[],'name':[],'station':[],'trade':[],'phone':[]}
 
 	# login
 	try:
@@ -81,18 +81,16 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 		select.select_by_index(1)
 	else:
 		select.select_by_index(2)
-
+	driver.find_element(By.ID, '__BVID__372').send_keys(priceMin)
 	driver.find_element(By.ID, '__BVID__374').send_keys(priceMax)
 	driver.find_element(By.ID, '__BVID__402').send_keys(areaMin)
+	driver.find_element(By.ID, '__BVID__407').send_keys(roomMin)
 	print("------------level-------------", level)
 	driver.find_element(By.ID, '__BVID__438').send_keys(level)
 	print("---------- end --------------", (built_year))
 	if (built_year != ''):
 		selectYear = Select(driver.find_element(By.ID, '__BVID__468'))
 		selectYear.select_by_index(2027 - int(built_year))
-	if (built_month != ''):
-		selectMonth = Select(driver.find_element(By.ID, '__BVID__470'))
-		selectMonth.select_by_index(int(built_month))
 	print("--------multi element------", etc_multi)
 
 	if (len(etc_multi) > 0):
@@ -110,17 +108,27 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 					print(ex.__str__)
 					print("test0")
 				print("test1")
-				if (len(etc_multi) == 1):
-					if (etc_multi[0] == '1'):
-						print("detected", 1)
+				if (len(etc_multi) > 0):
+					if '1' in etc_multi:
+						print("******  1  ******")
 						WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'ペット相談')]"))).click()
-					else:
-						print("detected", 2)
+					if '2' in etc_multi:
+						print("******** 2 *******")
 						WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), '事務所使用可')]"))).click()
-				elif (len(etc_multi) == 2):
-					print("detected 1 2")
-					WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'ペット相談')]"))).click()
-					WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), '事務所使用可')]"))).click()
+					if '3' in etc_multi:
+						print("******  3  ******")
+						WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'エレベータ')]"))).click()
+
+				# 	if (etc_multi[0] == '1'):
+				# 		print("detected", 1)
+				# 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'ペット相談')]"))).click()
+				# 	else:
+				# 		print("detected", 2)
+				# 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), '事務所使用可')]"))).click()
+				# elif (len(etc_multi) == 2):
+				# 	print("detected 1 2")
+				# 	WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'ペット相談')]"))).click()
+				# 	WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), '事務所使用可')]"))).click()
 				try:
 					WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '決定')]"))).click()
 				except Exception as ex:
@@ -156,7 +164,14 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 		while(True):       
 			i = i + 1 
 			locator = (By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition}"]')
-			WebDriverWait(driver, delay).until(EC.presence_of_element_located(locator))
+			try:
+				WebDriverWait(driver, delay).until(EC.presence_of_element_located(locator))
+			except TimeoutException:
+				print("Element not found within specified timeout")
+				return "noElement"
+			except Exception as e:
+				print("An error occured:", str(e))
+				return "Error"
 			html = driver.page_source.encode('utf-8')
 			soup = BeautifulSoup(html, "html.parser")        
 			divs_with_role_tabpanel = soup.find_all("div", {"role": "tabpanel"})
@@ -167,7 +182,7 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 			rent_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 5 / span 3;")
 			manageFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 5 / span 3;")
 			serviceFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 4; grid-column: 5 / span 3;")
-			builtYear_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 5 / span 9;")
+			roomMin_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 5 / span 9;")
 			partArea_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 11 / span 3;")
 			mPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 11 / span 3;")			
 			averPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 11 / span 3;")
@@ -175,32 +190,49 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 			station_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 14 / span 5;")
 			trade_group = second_div.find_all("span", class_='d-sm-none')
 			phone_group = second_div.find_all('span', class_='')
-
+			mapDownloadDiv = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 23 / span 2;")
+			
 			print("address len: ", len(address_group))
-			print("builtYear len: ", len(builtYear_group))
+			print("roomMin len: ", len(roomMin_group))
 			print("trade len: ", len(trade_group))
 			print("phone len: ", len(phone_group))
 
 			for j in range(len(address_group)):
-				result['address'].append(address_group[j].text)
-				result['type'].append(type_group[j].text)
-				result['rent'].append(rent_group[j].text)
-				result['manageFee'].append(manageFee_group[j].text)
-				result['serviceFee'].append(serviceFee_group[j].text)
-				result['builtYear'].append(builtYear_group[j].text)
-				result['partArea'].append(partArea_group[j].text)
-				result['mPrice'].append(mPrice_group[j].text)
-				result['averPrice'].append(averPrice_group[j].text)
+				result['address'].append(address_group[j].text.strip())
+				result['type'].append(type_group[j].text.strip())
+				result['rent'].append(rent_group[j].text.strip().replace(",", ""))
+				result['manageFee'].append(manageFee_group[j].text.strip().replace(",", ""))
+				result['serviceFee'].append(serviceFee_group[j].text.strip().replace(",", ""))
+				result['roomMin'].append(roomMin_group[j].text.strip())
+				result['partArea'].append(partArea_group[j].text.strip())
+				result['mPrice'].append(mPrice_group[j].text.strip().replace(",", ""))
+				result['averPrice'].append(averPrice_group[j].text.strip().replace(",", ""))
 				result['name'].append(name_group[j].text)
 				result['station'].append(station_group[j].text)
 				result['trade'].append(trade_group[j].text)
 				result['phone'].append(phone_group[j].text)
+				print(mapDownloadDiv[j])
+					
 
 			nextButton = driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Go to next page"]')
 			nextButton.click()
 			expected_text = str(i*50 + 1)
 			print(i,"clicked")
 			time.sleep(5)
+
+			current_mapDownloadDiv = mapDownloadDiv[0]
+			if current_mapDownloadDiv is None:
+				print(f"mapDownloadDiv[{j}] is None")
+			else:
+				print("=========== start ==========")
+				try:
+					mapDownloadBtn = current_mapDownloadDiv.find("button")
+					print("=========== end ==========", mapDownloadBtn)
+					mapDownloadBtn.click()
+					print("DownloadButton Clicked")
+				except Exception as e:
+					print("Download Button Not clickable", e)		
+
 			# WebDriverWait(driver, delay).until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition2}"]'), expected_text))
 		
 	except NoSuchElementException as e:
@@ -210,7 +242,7 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 	driver.close()
 	driver.quit()
 	print("================result=================")
-	print(result)
+	# print(result)
 	return result
 
 #FBV
@@ -231,17 +263,18 @@ def postContact(request):
 		stationTo = form["stationTo"].value()
 		distance = form["distance"].value()
 		distanceType = form["distanceType"].value()
+		priceMin = form["priceMin"].value()
 		priceMax = form["priceMax"].value()
 		areaMin = form["areaMin"].value()
 		level = form["level"].value()
 		built_year = form["built_year"].value()
-		built_month = form["built_month"].value()
+		roomMin = form["roomMin"].value()
 		etc_multi = form["etc_multi"].value() 
 	
-		res = scraping(userId, password, trackName, stationFrom, stationTo, distance, distanceType, priceMax, areaMin, level, built_year, built_month, etc_multi)
+		res = scraping(userId, password, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi)
 		# form.save()
 		if res == '500OverError' or res == 'loginError' or res == 'Error':
-			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'built_month' : built_month, 'etc_multi' : etc_multi})
+			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'roomMin' : roomMin, 'etc_multi' : etc_multi})
 		else:
 			return render(request, "map.html", {'map_data' : res})
 

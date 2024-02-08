@@ -3,7 +3,7 @@ from multiselectfield import MultiSelectField
 
 # Create your models here.
 class Contact(models.Model):
-	userId = models.CharField(max_length=50)
+	userId = models.CharField(max_length=50, error_messages={'invalid' : 'aaaaa'})
 	password = models.CharField(max_length = 50)
 	trackName = models.CharField(max_length=50)
 	stationFrom = models.CharField(max_length=50, blank=True)
@@ -11,19 +11,21 @@ class Contact(models.Model):
 	distance = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
 	distanceType_Options = [
 		(1, '分'),
-        (2, 'ｍ'),
+        # (2, 'ｍ'),
 	]
-	distanceType = models.IntegerField(choices=distanceType_Options, blank=True)	
-	priceMax = models.DecimalField(max_digits=10, decimal_places=0, blank=True)
-	areaMin = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
+	distanceType = models.IntegerField(choices=distanceType_Options, default='1', blank=False)	
+	priceMin = models.DecimalField(max_digits=10, decimal_places=1, blank=True)
+	priceMax = models.DecimalField(max_digits=10, decimal_places=1, blank=True)
+	roomMin = models.DecimalField(max_digits=2, decimal_places = 0, blank=True)
+	areaMin = models.DecimalField(max_digits=10, decimal_places=1, blank=True)
 	level = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
 	built_year = models.DecimalField(max_digits=4, decimal_places = 0, blank=True)
-	built_month = models.DecimalField(max_digits=2, decimal_places = 0, blank=True)
 	# etc = models.TextField(blank=True)
 	etc_CHOICES =( 
 		("0", ""),
 		("1", "ペット相談"), 
 		("2", "事務所使用可"),
+		("3", "エレベーター"),
 	) 
 	etc_multi = MultiSelectField(choices = etc_CHOICES) 
 
