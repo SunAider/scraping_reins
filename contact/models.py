@@ -5,6 +5,16 @@ from multiselectfield import MultiSelectField
 class Contact(models.Model):
 	userId = models.CharField(max_length=50, error_messages={'invalid' : 'aaaaa'})
 	password = models.CharField(max_length = 50)
+	propertyType_Options = [
+		# (0, ''),
+		(1, '賃貸土地'),
+        (2, '賃貸一戸建'),
+        (3, '賃貸マンション'),
+        (4, '賃貸外全(住宅以外建物全部)'),
+        (5, '賃貸外一(住宅以外建物一部)'),
+	]
+	propertyType1 = models.IntegerField(choices=propertyType_Options, default='2', blank=False)	
+	propertyType2 = models.IntegerField(choices=propertyType_Options, default='3', blank=False)	
 	trackName = models.CharField(max_length=50)
 	stationFrom = models.CharField(max_length=50, blank=True)
 	stationTo = models.CharField(max_length=50, blank=True)

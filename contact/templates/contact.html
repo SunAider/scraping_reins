@@ -211,7 +211,11 @@
 		} else if (res == "loginError") {
 			alert("ログイン情報が正しくありません。");
 			window.location.href = '/'
-		} else if (res == "Error") {
+		} else if (res == "noElement") {
+			alert("検索結果がありません。");
+			window.location.href = '/';
+		}
+		else if (res == "Error") {
 			alert("ただいまREINSサービス提供を停止しております。");
 			window.location.href = '/'
 		} else {
@@ -327,7 +331,7 @@
 				if (etc_multi_arr.includes(3)) {
 					etc_multiInput_3.checked = true;
 				}
-			} 
+			}
 		}
 
 		// $("#contactForm").submit(function (e) {

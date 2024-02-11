@@ -18,7 +18,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
 # Create your views here.
 
-def scraping(userId, password, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi):	
+def scraping(userId, password, propertyType1, propertyType2, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi):	
 	# driver = webdriver.Chrome('./chromedriver')
 	options = Options()
 	options.add_argument('--headless')
@@ -43,7 +43,7 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 	delay = 10 #seconds
 	style_condition = 'grid-row-start: 1; grid-column: 14 / span 11;'
 	style_condition2 = 'grid-row: 1 / span 2; grid-column-start: 1;'
-	result = {'address':[], 'type':[], 'rent':[], 'manageFee':[],'serviceFee':[],'roomMin':[],'partArea':[],'mPrice':[],'averPrice':[],'name':[],'station':[],'trade':[],'phone':[]}
+	result = {'address':[], 'type':[], 'rent':[], 'manageFee':[],'serviceFee':[],'roomMin':[],'partArea':[],'mPrice':[],'averPrice':[],'name':[],'station':[],'trade':[],'phone':[], 'floorPlan':[]}
 
 	# login
 	try:
@@ -69,9 +69,9 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 	# 3rd page
 	WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__140")).is_displayed()  
 	select = Select(driver.find_element(By.ID, '__BVID__140'))
-	select.select_by_index(2)
+	select.select_by_index(int(propertyType1))
 	select = Select(driver.find_element(By.ID, '__BVID__149'))
-	select.select_by_index(3)
+	select.select_by_index(int(propertyType2))
 	driver.find_element(By.ID, '__BVID__292').send_keys(trackName)
 	driver.find_element(By.ID, '__BVID__296').send_keys(stationFrom)
 	driver.find_element(By.ID, '__BVID__298').send_keys(stationTo) 
@@ -190,7 +190,7 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 			station_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 14 / span 5;")
 			trade_group = second_div.find_all("span", class_='d-sm-none')
 			phone_group = second_div.find_all('span', class_='')
-			mapDownloadDiv = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 23 / span 2;")
+			floorPlan_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 23 / span 2;")
 			
 			print("address len: ", len(address_group))
 			print("roomMin len: ", len(roomMin_group))
@@ -211,27 +211,13 @@ def scraping(userId, password, trackName, stationFrom, stationTo, distance, dist
 				result['station'].append(station_group[j].text)
 				result['trade'].append(trade_group[j].text)
 				result['phone'].append(phone_group[j].text)
-				print(mapDownloadDiv[j])
-					
+				result['floorPlan'].append(floorPlan_group[j].text)
 
 			nextButton = driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Go to next page"]')
 			nextButton.click()
 			expected_text = str(i*50 + 1)
 			print(i,"clicked")
 			time.sleep(5)
-
-			current_mapDownloadDiv = mapDownloadDiv[0]
-			if current_mapDownloadDiv is None:
-				print(f"mapDownloadDiv[{j}] is None")
-			else:
-				print("=========== start ==========")
-				try:
-					mapDownloadBtn = current_mapDownloadDiv.find("button")
-					print("=========== end ==========", mapDownloadBtn)
-					mapDownloadBtn.click()
-					print("DownloadButton Clicked")
-				except Exception as e:
-					print("Download Button Not clickable", e)		
 
 			# WebDriverWait(driver, delay).until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition2}"]'), expected_text))
 		
@@ -258,6 +244,8 @@ def postContact(request):
 		print(form["userId"].value())
 		userId = form["userId"].value() 
 		password = form["password"].value()
+		propertyType1 = form["propertyType1"].value()
+		propertyType2 = form["propertyType2"].value()
 		trackName = form["trackName"].value()
 		stationFrom = form["stationFrom"].value()
 		stationTo = form["stationTo"].value()
@@ -271,9 +259,9 @@ def postContact(request):
 		roomMin = form["roomMin"].value()
 		etc_multi = form["etc_multi"].value() 
 	
-		res = scraping(userId, password, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi)
+		res = scraping(userId, password, propertyType1, propertyType2, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi)
 		# form.save()
-		if res == '500OverError' or res == 'loginError' or res == 'Error':
+		if res == '500OverError' or res == 'loginError' or res == 'Error' or res == 'noElement':
 			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'roomMin' : roomMin, 'etc_multi' : etc_multi})
 		else:
 			return render(request, "map.html", {'map_data' : res})

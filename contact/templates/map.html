@@ -55,6 +55,7 @@
 		var station_data_str = "{{ map_data.station }}";
 		var trade_data_str = "{{ map_data.trade }}";
 		var phone_data_str = "{{ map_data.phone }}";
+		var floorPlan = "{{ map_data.floorPlan }}";
 
 		var type_data = type_data_str.split(',');
 		var rent_data = rent_data_str.split(',');
@@ -69,6 +70,7 @@
 		var station_data = station_data_str.split(',');
 		var trade_data = trade_data_str.split(',');
 		var phone_data = phone_data_str.split(',');
+		var floorPlan_data = floorPlan.split(',');
 
 		function initMap() {
 			var map = new google.maps.Map(document.getElementById('map'), {
@@ -118,7 +120,8 @@
 								+ '<p>' + manageFee_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
 								+ '<p>' + serviceFee_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
 								// + '<p>' + builtYear_data[index].replace(/&#39;/g, '') + '</p>'
-								+ '<p>' + partArea_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p><br>'
+								+ '<p>' + partArea_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
+								+ '<p>' + floorPlan_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p><br>'
 								// + '<p>' + mPrice_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p><br>'
 								// + '<p>' + averPrice_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
 								+ '<p>' + address.replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p><br>'
