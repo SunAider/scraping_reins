@@ -29,17 +29,86 @@
 		border-radius: 10px;
 		padding: 1%;
 		font-size: 0.8rem;
+		max-width: 60%;
 	}
 
 	.infobody p {
 		margin-bottom: 0.3rem;
+	}
+
+	#infoDiv {
+		display: none;
+		position: absolute;
+		top: 7rem;
+		right: 10px;
+		background-color: white;
+		padding: 10px;
+		border: 1px solid #ccc;
+		font-size: 0.8rem;
+	}
+
+	#infoDiv p {
+		margin-bottom: 0.2rem;
+	}
+
+	#showButton {
+		/* display: none; */
+		position: absolute;
+		top: 4rem;
+		right: 10px;
+		width: 4rem;
+		height: 2.5rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.cute-green-button {
+		padding: 10px 20px;
+		font-size: 16px;
+		border: none;
+		border-radius: 20px;
+		/* Rounded corners */
+		background-color: #4CAF50;
+		/* Green background */
+		color: #fff;
+		/* White text */
+		box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+		/* Soft shadow */
+		cursor: pointer;
+		outline: none;
+		transition: transform 0.2s ease-in-out;
+		/* Smooth transform animation */
+	}
+
+	.cute-green-button:hover {
+		background-color: #45a049;
+		/* Darker green on hover */
+		transform: translateY(-2px);
+		/* Move button up slightly on hover */
+	}
+
+	.cute-green-button:active {
+		transform: translateY(0px);
+		/* Revert back to original position when clicked */
+		box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+		/* Adjust shadow on click */
+	}
+	.keySpan {
+		font-weight: bold;
 	}
 </style>
 
 <div class="">
 	<div id="map"></div>
 	<div id="custom-infowindow"></div>
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&callback=initMap" async defer></script>
+	<button id="showButton" class="cute-green-button">Show</button>
+	<div id="infoDiv">
+		<!-- Content to display in the div -->
+		<p>Some information goes here...</p>
+	</div>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&callback=initMap"
+		async defer></script>
 	<!-- <script	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&libraries=places&loading=async"></script> -->
 	<script>
 		var type_data_str = "{{ map_data.type }}";
@@ -65,12 +134,23 @@
 		var partArea_data = partArea_data_str.split(',');
 		var mPrice_data = mPrice_data_str.split(',');
 		var averPrice_data = averPrice_data_str.split(',');
-		var address_data = address_data_str.split(',');
+		var address_data = address_data_str.replace(/&#39;/g, '').replace(/[\[\]]/g, "").split(',');
 		var name_data = name_data_str.split(',');
 		var station_data = station_data_str.split(',');
 		var trade_data = trade_data_str.split(',');
 		var phone_data = phone_data_str.split(',');
 		var floorPlan_data = floorPlan.split(',');
+
+		// Populate addressToMarkers
+		var addressToMarkers = {};
+		address_data.forEach(function (address, index) {
+			if (!addressToMarkers[address]) {
+				addressToMarkers[address] = [];
+			}
+			addressToMarkers[address].push(index);
+		});
+		console.log("==addressToMarkers===");
+		console.log(addressToMarkers);
 
 		function initMap() {
 			var map = new google.maps.Map(document.getElementById('map'), {
@@ -90,49 +170,32 @@
 				// }
 			);
 			// Geocode each address and add a marker to the map
-			address_data.forEach(function (address, index) {
+			// address_data.forEach(function (address, index) {
+			Object.keys(addressToMarkers).forEach(function (address) {
 				var geocoder = new google.maps.Geocoder();
-
 				geocoder.geocode({ 'address': address }, function (results, status) {
 					if (status === 'OK' && results.length > 0) {
 						var location = results[0].geometry.location;
-						// console.log(address);
-						// console.log(address.replace(/'/g, ''));
-						// Create a marker for each address
+
 						var marker = new google.maps.Marker({
 							position: location,
 							map: map,
 							title: address,
 							label: {
-								text: (index + 1).toString(),
-								color: 'white'
+								text: (addressToMarkers[address][0] + 1).toString(),
+								color: addressToMarkers[address].length > 1 ? 'white' : 'black'
 							}
 						});
-						// Extend the bounds to include the marker's position
 						bounds.extend(marker.getPosition());
 
 						marker.addListener('click', function () {
-							// Set the content of the infowindow
-							customWindow.innerHTML = '<div><p style="font-size: 1rem; font-weight:bold;">No.'
-								+ (index+1) + '</p><hr/><div class="infobody">'
-								+ '<p>' + type_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + rent_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + manageFee_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + serviceFee_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
-								// + '<p>' + builtYear_data[index].replace(/&#39;/g, '') + '</p>'
-								+ '<p>' + partArea_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + floorPlan_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p><br>'
-								// + '<p>' + mPrice_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p><br>'
-								// + '<p>' + averPrice_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + address.replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p><br>'
-								+ '<p>' + name_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + station_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + trade_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-								+ '<p>' + phone_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-								+ '</div></div>';
-							// Open the infowindow at the marker's position
-							// infowindow.setPosition(location);
-							// infowindow.open(map);
+							// Set content for all markers at this address
+							var content = '';
+							addressToMarkers[address].forEach(function (index) {console.log("index: ", index);
+								content += getMarkerContent(index);
+							});
+							// showInfoWindow(content, location);
+							customWindow.innerHTML = content
 						});
 					} else {
 						console.error('Geocode was not successful for the following reason:', status);
@@ -140,10 +203,26 @@
 					map.fitBounds(bounds);
 				});
 			});
+			// Function to get marker content
+			function getMarkerContent(index) {
+				return '<div><p style="font-size: 1rem; font-weight:bold;">No.'
+					+ (index + 1) + '</p><hr/><div class="infobody">'
+					+ '<p>' + type_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + rent_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + manageFee_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + serviceFee_data[index].replace(/&#39;/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + partArea_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + floorPlan_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p><br>'
+					+ '<p>' + address_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p><br>'
+					+ '<p>' + name_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + station_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + trade_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
+					+ '<p>' + phone_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
+					+ '</div></div><br>';
+			}
 		}
 
 		initMap();
-
 	</script>
 </div>
 {% endblock %}
@@ -151,7 +230,71 @@
 <!-- <script src="sample.js"></script> -->
 <script type="text/javascript">
 	$(document).ready(function () {
-		console.log("|''''''''");
+		console.log("''''''''");
+
+		var propertyType1 = "{{propertyType1}}";
+		var propertyType2 = "{{propertyType2}}";
+		console.log("propertyType1", propertyType1);
+		console.log("propertyType2", propertyType2);
+		var propertyOptions = ['賃貸土地', '賃貸一戸建', "賃貸マンション", '賃貸外全(住宅以外建物全部)', '賃貸外一(住宅以外建物一部)'];
+		var trackName = "{{trackName}}";
+		var stationFrom = "{{stationFrom}}";
+		var stationTo = "{{stationTo}}";
+		var distance = "{{distance}}";
+		var distanceType = "{{distanceType}}";
+		var priceMin = "{{priceMin}}";
+		var priceMax = "{{priceMax}}";
+		var areaMin = "{{areaMin}}";
+		var level = "{{level}}";
+		var built_year = "{{built_year}}";
+		var roomMin = "{{roomMin}}";
+		var etc_multi = "{{etc_multi}}";
+		console.log("etc_multi: ", etc_multi);
+		var etc_multi_options = ['ペット相談', '事務所使用可', 'エレベーター'];
+		var matchedOptions = [];
+
+		etc_multi_arr = JSON.parse(etc_multi.replace(/&#39;/g, ""));
+		if (etc_multi_arr?.length > 0) {
+			if (etc_multi_arr.includes(1)) {
+				matchedOptions.push(etc_multi_options[0]);
+			}
+			if (etc_multi_arr.includes(2)) {
+				matchedOptions.push(etc_multi_options[1]);
+			}
+			if (etc_multi_arr.includes(3)) {
+				matchedOptions.push(etc_multi_options[2]);
+			}
+		}
+		console.log("matchedOptions: ", matchedOptions);
+
+		var content = "<p><span class='keySpan'>物件種別１: </span>" + propertyOptions[propertyType1] + "</p>" +
+			"<p><span class='keySpan'> 物件種別 2: </span>" + propertyOptions[propertyType2] + "</p>" +
+			"<p><span class='keySpan'>沿線１/沿線名: </span>" + trackName + "</p>" +
+			"<p><span class='keySpan'>駅名(From): </span>" + stationFrom + "</p>" +
+			"<p><span class='keySpan'>駅名(To): </span>" + stationTo + "</p>" +
+			"<p><span class='keySpan'>駅から徒歩(分以内): </span>" + distance + "</p>" +
+			"<p><span class='keySpan'>以内: </span>" + distanceType + "</p>" +
+			"<p><span class='keySpan'>賃料(Min)万円: </span>" + priceMin + "</p>" +
+			"<p><span class='keySpan'>賃料(Max)万円: </span>" + priceMax + "</p>" +
+			"<p><span class='keySpan'>間取部屋数(Min): </span>" + areaMin + "</p>" +
+			"<p><span class='keySpan'>建物使用部分面積(Min): </span>" + roomMin + "</p>" +
+			"<p><span class='keySpan'>所在階: </span>" + level + "</p>" +
+			"<p><span class='keySpan'>築年(Min)西暦: </span>" + built_year + "</p>" +
+			"<p><span class='keySpan'>設備・条件・住宅性能等: </span>" + "<br>" + " <span style='margin-left: 3rem;'> " + matchedOptions + "</span></p>"
+			;
+		var infoDiv = $('#infoDiv');
+		infoDiv.html(content);
+
+		$('#showButton').click(function () {
+			console.log("clicked");
+			if (infoDiv.css('display') === 'none') {
+				infoDiv.css('display', 'block');
+				$(this).text("Hide");
+			} else {
+				infoDiv.css('display', 'none');
+				$(this).text("Show");
+			}
+		})
 	})
 </script>
 {% endblock %}

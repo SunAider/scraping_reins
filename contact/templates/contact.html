@@ -179,10 +179,126 @@
 
 	// Show loading icon when a link is clicked
 	function showLoadingIcon() {
-		console.log("loading icon 1");
+		console.log("loading icon");
 		document.getElementById('loading-icon').style.display = 'block';
 	}
+	function SaveFormData() {
+		console.log("save form data");
+		var userIdInput = document.getElementsByName("userId")[0];
+		var passwordInput = document.getElementsByName("password")[0];
+		var propertyType1Input = document.getElementsByName("propertyType1")[0];
+		var propertyType2Input = document.getElementsByName("propertyType2")[0];
+		var trackNameInput = document.getElementsByName("trackName")[0];
+		var stationFromInput = document.getElementsByName("stationFrom")[0];
+		var stationToInput = document.getElementsByName("stationTo")[0];
+		var distanceInput = document.getElementsByName("distance")[0];
+		var distanceTypeInput = document.getElementsByName("distanceType")[0];
+		var priceMinInput = document.getElementsByName("priceMin")[0];
+		var priceMaxInput = document.getElementsByName("priceMax")[0];
+		var areaMinInput = document.getElementsByName("areaMin")[0];
+		var levelInput = document.getElementsByName("level")[0];
+		var built_yearInput = document.getElementsByName("built_year")[0];
+		var roomMinInput = document.getElementsByName("roomMin")[0];
+		var ulElement = document.getElementById('id_etc_multi');
+		var checkboxes = ulElement.querySelectorAll('input[type="checkbox"]');
+		var etc_multi = [];
+		checkboxes.forEach(function (checkbox) {
+			if (checkbox.checked) {
+				etc_multi.push(checkbox.value);
+			}
+		});
+
+		localStorage.setItem("userId", userIdInput.value);
+		localStorage.setItem("password", passwordInput.value);
+		localStorage.setItem("propertyType1", propertyType1Input.value);
+		localStorage.setItem("propertyType2", propertyType2Input.value);
+		localStorage.setItem("trackName", trackNameInput.value);
+		localStorage.setItem("stationFrom", stationFromInput.value);
+		localStorage.setItem("stationTo", stationToInput.value);
+		localStorage.setItem("distance", distanceInput.value);
+		localStorage.setItem("distanceType", distanceTypeInput.value);
+		localStorage.setItem("priceMin", priceMinInput.value);
+		localStorage.setItem("priceMax", priceMaxInput.value);
+		localStorage.setItem("areaMin", areaMinInput.value);
+		localStorage.setItem("level", levelInput.value);
+		localStorage.setItem("built_year", built_yearInput.value);
+		localStorage.setItem("roomMin", roomMinInput.value);
+		localStorage.setItem("etc_multi", etc_multi);
+	}
+
+	function initForm() {
+		console.log("init form");
+		userId = localStorage.getItem("userId");
+		password = localStorage.getItem("password");
+		propertyType1 = localStorage.getItem("propertyType1");
+		propertyType2 = localStorage.getItem("propertyType2");
+		trackName = localStorage.getItem("trackName");
+		stationFrom = localStorage.getItem("stationFrom");
+		stationTo = localStorage.getItem("stationTo");
+		distance = localStorage.getItem("distance");
+		distanceType = localStorage.getItem("distanceType");
+		priceMin = localStorage.getItem("priceMin");
+		priceMax = localStorage.getItem("priceMax");
+		areaMin = localStorage.getItem("areaMin");
+		level = localStorage.getItem("level");
+		built_year = localStorage.getItem("built_year");
+		roomMin = localStorage.getItem("roomMin");
+		etc_multi = localStorage.getItem("etc_multi");
+
+		var userIdInput = document.getElementsByName("userId")[0];
+		var passwordInput = document.getElementsByName("password")[0];
+		var propertyType1Input = document.getElementsByName("propertyType1")[0];
+		var propertyType2Input = document.getElementsByName("propertyType2")[0];
+		var trackNameInput = document.getElementsByName("trackName")[0];
+		var stationFromInput = document.getElementsByName("stationFrom")[0];
+		var stationToInput = document.getElementsByName("stationTo")[0];
+		var distanceInput = document.getElementsByName("distance")[0];
+		var distanceTypeInput = document.getElementsByName("distanceType")[0];
+		var priceMinInput = document.getElementsByName("priceMin")[0];
+		var priceMaxInput = document.getElementsByName("priceMax")[0];
+		var areaMinInput = document.getElementsByName("areaMin")[0];
+		var levelInput = document.getElementsByName("level")[0];
+		var built_yearInput = document.getElementsByName("built_year")[0];
+		var roomMinInput = document.getElementsByName("roomMin")[0];
+		var etc_multiInput_1 = document.getElementsByName("etc_multi")[1];
+		var etc_multiInput_2 = document.getElementsByName("etc_multi")[2];
+		var etc_multiInput_3 = document.getElementsByName("etc_multi")[3];
+
+		userIdInput.value = userId;
+		passwordInput.value = password;
+		propertyType1Input.value = propertyType1;
+		propertyType2Input.value = propertyType2;
+		trackNameInput.value = trackName;
+		stationFromInput.value = stationFrom;
+		stationToInput.value = stationTo;
+		distanceInput.value = distance;
+		distanceTypeInput.value = distanceType;
+		priceMinInput.value = priceMin;
+		priceMaxInput.value = priceMax;
+		areaMinInput.value = areaMin;
+		levelInput.value = level;
+		built_yearInput.value = built_year;
+		roomMinInput.value = roomMin;
+
+		if (etc_multi !== null && etc_multi !== undefined) {
+			var etc_multi_arr = etc_multi.split(',');
+			console.log(etc_multi_arr);
+		}
+		if (etc_multi_arr?.length > 0) {
+			if (etc_multi_arr.includes('1')) {
+				etc_multiInput_1.checked = true;
+			}
+			if (etc_multi_arr.includes('2')) {
+				etc_multiInput_2.checked = true;
+			}
+			if (etc_multi_arr.includes('3')) {
+				etc_multiInput_3.checked = true;
+			}
+		}
+	}
+
 	function submitForm() {
+		SaveFormData();
 		showLoadingIcon();
 		console.log("submit clicked");
 		document.getElementById('contactForm').submit();
@@ -204,7 +320,6 @@
 		$("#submit").hide();
 		$("#id_etc_multi_0").hide();
 		var res = "{{data}}";
-		SaveFormData();
 		if (res == "500OverError") {
 			alert("検索結果が500件を超えています。検索条件入力画面に戻ります。")
 			window.location.href = '/'
@@ -213,6 +328,10 @@
 			window.location.href = '/'
 		} else if (res == "noElement") {
 			alert("検索結果がありません。");
+			window.location.href = '/';
+		}
+		else if (res == "noData") {
+			alert("検索結果がありません。0");
 			window.location.href = '/';
 		}
 		else if (res == "Error") {
@@ -239,100 +358,9 @@
 			}
 		});
 
-		function SaveFormData() {
-			var userId = "{{userId}}";
-			var password = "{{password}}";
-			var trackName = "{{trackName}}";
-			var stationFrom = "{{stationFrom}}";
-			var stationTo = "{{stationTo}}";
-			var distance = "{{distance}}";
-			var distanceType = "{{distanceType}}";
-			var priceMin = "{{priceMin}}";
-			var priceMax = "{{priceMax}}";
-			var areaMin = "{{areaMin}}";
-			var level = "{{level}}";
-			var built_year = "{{built_year}}";
-			var roomMin = "{{roomMin}}";
-			var etc_multi = "{{etc_multi}}";
 
-			if (userId) {
-				// 	console.log("valid userId", userId);
-				localStorage.setItem("userId", userId);
-				localStorage.setItem("password", password);
-				localStorage.setItem("trackName", trackName);
-				localStorage.setItem("stationFrom", stationFrom);
-				localStorage.setItem("stationTo", stationTo);
-				localStorage.setItem("distance", distance);
-				localStorage.setItem("distanceType", distanceType);
-				localStorage.setItem("priceMin", priceMin);
-				localStorage.setItem("priceMax", priceMax);
-				localStorage.setItem("areaMin", areaMin);
-				localStorage.setItem("level", level);
-				localStorage.setItem("built_year", built_year);
-				localStorage.setItem("roomMin", roomMin);
-				localStorage.setItem("etc_multi", etc_multi.replace(/&#39;/g, ""));
-			}
-		}
 
-		function initForm() {
-			userId = localStorage.getItem("userId");
-			password = localStorage.getItem("password");
-			trackName = localStorage.getItem("trackName");
-			stationFrom = localStorage.getItem("stationFrom");
-			stationTo = localStorage.getItem("stationTo");
-			distance = localStorage.getItem("distance");
-			distanceType = localStorage.getItem("distanceType");
-			priceMin = localStorage.getItem("priceMin");
-			priceMax = localStorage.getItem("priceMax");
-			areaMin = localStorage.getItem("areaMin");
-			level = localStorage.getItem("level");
-			built_year = localStorage.getItem("built_year");
-			roomMin = localStorage.getItem("roomMin");
-			etc_multi = localStorage.getItem("etc_multi");
 
-			var userIdInput = document.getElementsByName("userId")[0];
-			var passwordInput = document.getElementsByName("password")[0];
-			var trackNameInput = document.getElementsByName("trackName")[0];
-			var stationFromInput = document.getElementsByName("stationFrom")[0];
-			var stationToInput = document.getElementsByName("stationTo")[0];
-			var distanceInput = document.getElementsByName("distance")[0];
-			var distanceTypeInput = document.getElementsByName("distanceType")[0];
-			var priceMinInput = document.getElementsByName("priceMin")[0];
-			var priceMaxInput = document.getElementsByName("priceMax")[0];
-			var areaMinInput = document.getElementsByName("areaMin")[0];
-			var levelInput = document.getElementsByName("level")[0];
-			var built_yearInput = document.getElementsByName("built_year")[0];
-			var roomMinInput = document.getElementsByName("roomMin")[0];
-			var etc_multiInput_1 = document.getElementsByName("etc_multi")[1];
-			var etc_multiInput_2 = document.getElementsByName("etc_multi")[2];
-			var etc_multiInput_3 = document.getElementsByName("etc_multi")[3];
-
-			userIdInput.value = userId;
-			passwordInput.value = password;
-			trackNameInput.value = trackName;
-			stationFromInput.value = stationFrom;
-			stationToInput.value = stationTo;
-			distanceInput.value = distance;
-			distanceTypeInput.value = distanceType;
-			priceMinInput.value = priceMin;
-			priceMaxInput.value = priceMax;
-			areaMinInput.value = areaMin;
-			levelInput.value = level;
-			built_yearInput.value = built_year;
-			roomMinInput.value = roomMin;
-			etc_multi_arr = JSON.parse(etc_multi);
-			if (etc_multi_arr?.length > 0) {
-				if (etc_multi_arr.includes(1)) {
-					etc_multiInput_1.checked = true;
-				}
-				if (etc_multi_arr.includes(2)) {
-					etc_multiInput_2.checked = true;
-				}
-				if (etc_multi_arr.includes(3)) {
-					etc_multiInput_3.checked = true;
-				}
-			}
-		}
 
 		// $("#contactForm").submit(function (e) {
 		// e.preventDefault();

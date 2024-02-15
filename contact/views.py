@@ -153,10 +153,17 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '検索')]"))).click()
 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), '賃貸マンション')]"))).click()
 	except Exception as ex:
-		driver.close()
-		driver.quit()
 		print("test1.6")
-		return "500OverError"
+		try:
+			confirmElement = WebDriverWait(driver, delay).until(EC.visibility_of_all_elements_located((By.XPATH, "//div[contains(text(), '検索結果が500件を超えています')]")))
+			driver.close()
+			driver.quit()
+			if (confirmElement):
+				print("500 over Error")
+				return "500OverError"
+		except Exception as ex:
+			print("noElement")
+			return "noElement"
 	print("test2")
 	# getting result
 	try:
@@ -217,7 +224,7 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 			nextButton.click()
 			expected_text = str(i*50 + 1)
 			print(i,"clicked")
-			time.sleep(5)
+			time.sleep(8)
 
 			# WebDriverWait(driver, delay).until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition2}"]'), expected_text))
 		
@@ -228,7 +235,7 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 	driver.close()
 	driver.quit()
 	print("================result=================")
-	# print(result)
+	print(result)
 	return result
 
 #FBV
@@ -261,10 +268,12 @@ def postContact(request):
 	
 		res = scraping(userId, password, propertyType1, propertyType2, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi)
 		# form.save()
+		print("protpertyType1", propertyType1)
+		print("protpertyType2", propertyType2)
 		if res == '500OverError' or res == 'loginError' or res == 'Error' or res == 'noElement':
-			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'roomMin' : roomMin, 'etc_multi' : etc_multi})
+			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'propertyType2' : propertyType2, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'roomMin' : roomMin, 'etc_multi' : etc_multi})
 		else:
-			return render(request, "map.html", {'map_data' : res})
+			return render(request, "map.html", {'map_data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'propertyType2' : propertyType2, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'roomMin' : roomMin, 'etc_multi' : etc_multi})
 
 			# return JsonResponse({"success": res}, status=200)
 	return JsonResponse({"success":False}, status=400)
