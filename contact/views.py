@@ -18,7 +18,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
 # Create your views here.
 
-def scraping(userId, password, propertyType1, propertyType2, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi):	
+def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi):	
 	# driver = webdriver.Chrome('./chromedriver')
 	options = Options()
 	options.add_argument('--headless')
@@ -70,8 +70,8 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 	WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__140")).is_displayed()  
 	select = Select(driver.find_element(By.ID, '__BVID__140'))
 	select.select_by_index(int(propertyType1))
-	select = Select(driver.find_element(By.ID, '__BVID__149'))
-	select.select_by_index(int(propertyType2))
+	# select = Select(driver.find_element(By.ID, '__BVID__149'))
+	# select.select_by_index(int(propertyType2))
 	driver.find_element(By.ID, '__BVID__292').send_keys(trackName)
 	driver.find_element(By.ID, '__BVID__296').send_keys(stationFrom)
 	driver.find_element(By.ID, '__BVID__298').send_keys(stationTo) 
@@ -109,16 +109,18 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 					print("test0")
 				print("test1")
 				if (len(etc_multi) > 0):
-					if '1' in etc_multi:
-						print("******  1  ******")
-						WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'ペット相談')]"))).click()
-					if '2' in etc_multi:
-						print("******** 2 *******")
-						WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), '事務所使用可')]"))).click()
-					if '3' in etc_multi:
-						print("******  3  ******")
-						WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'エレベータ')]"))).click()
-
+					try:
+						if '1' in etc_multi:
+							print("******  1  ******")
+							WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'ペット相談')]"))).click()
+						if '2' in etc_multi:
+							print("******** 2 *******")
+							WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), '事務所使用可')]"))).click()
+						if '3' in etc_multi:
+							print("******  3  ******")
+							WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'エレベータ')]"))).click()
+					except TimeoutException as e:
+						print("unable to click multi element")
 				# 	if (etc_multi[0] == '1'):
 				# 		print("detected", 1)
 				# 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'ペット相談')]"))).click()
@@ -148,13 +150,26 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 			return "500OverError"		
 	print("test1.4")
 
+	propertyType_options = [
+		"",
+		"賃貸土地",
+		"賃貸一戸建",
+		"賃貸マンション",
+		"賃貸外全(住宅以外建物全部)",
+		"賃貸外一(住宅以外建物一部)"
+	]
+	propertyType1_str = propertyType_options[int(propertyType1)]
+	# propertyType2_str = propertyType_options[int(propertyType2)]
+	print("propertyType1_str", propertyType1_str)
+	# print("propertyType2_str", propertyType2_str)
 	try:
 		print("Test1.5")
 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '検索')]"))).click()
-		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), '賃貸マンション')]"))).click()
+		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), '" + propertyType1_str + "')]"))).click()
 	except Exception as ex:
 		print("test1.6")
 		try:
+			print("test 1.65")
 			confirmElement = WebDriverWait(driver, delay).until(EC.visibility_of_all_elements_located((By.XPATH, "//div[contains(text(), '検索結果が500件を超えています')]")))
 			driver.close()
 			driver.quit()
@@ -162,13 +177,15 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 				print("500 over Error")
 				return "500OverError"
 		except Exception as ex:
-			print("noElement")
+			print("noElementsss", str(ex))
 			return "noElement"
 	print("test2")
 	# getting result
 	try:
 		i = 0
+		currentPropertyType = propertyType1_str
 		while(True):       
+			time.sleep(8)
 			i = i + 1 
 			locator = (By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition}"]')
 			try:
@@ -181,26 +198,45 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 				return "Error"
 			html = driver.page_source.encode('utf-8')
 			soup = BeautifulSoup(html, "html.parser")        
-			divs_with_role_tabpanel = soup.find_all("div", {"role": "tabpanel"})
-			second_div = divs_with_role_tabpanel[1]
+			divs_with_role_tabpanel = soup.find_all("div", {"role": "tabpanel", "style": ""})
+			second_div = None
+			second_div = divs_with_role_tabpanel[0]
 
-			address_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 14 / span 11;")
-			type_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 5 / span 6;")
+			#  物件種目
+			type_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 5 / span 6;")  
+			# 賃料
 			rent_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 5 / span 3;")
+			# 管理費
 			manageFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 5 / span 3;")
+			# 共益費
 			serviceFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 4; grid-column: 5 / span 3;")
-			roomMin_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 5 / span 9;")
+			# 使用部分面積, 土地面積
 			partArea_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 11 / span 3;")
-			mPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 11 / span 3;")			
-			averPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 11 / span 3;")
-			name_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 14 / span 5;")
-			station_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 14 / span 5;")
-			trade_group = second_div.find_all("span", class_='d-sm-none')
-			phone_group = second_div.find_all('span', class_='')
+			# 間取
 			floorPlan_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 23 / span 2;")
+			# 所在地
+			address_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 14 / span 11;")
+			# 建物名
+			if (currentPropertyType == '賃貸一戸建'):
+				name_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 14 / span 9;")
+			else:
+				name_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 14 / span 5;")
+			
+			# 沿線駅
+			station_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 14 / span 5;")
+			# 商号
+			trade_group = second_div.find_all("span", class_='d-sm-none')
+			# 電話番号
+			phone_group = second_div.find_all('span', class_='')
+
+			# 築年月
+			# roomMin_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 5 / span 9;")
+			# ㎡単価
+			# mPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 11 / span 3;")			
+			# 坪単価
+			# averPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 11 / span 3;")
 			
 			print("address len: ", len(address_group))
-			print("roomMin len: ", len(roomMin_group))
 			print("trade len: ", len(trade_group))
 			print("phone len: ", len(phone_group))
 
@@ -210,21 +246,27 @@ def scraping(userId, password, propertyType1, propertyType2, trackName, stationF
 				result['rent'].append(rent_group[j].text.strip().replace(",", ""))
 				result['manageFee'].append(manageFee_group[j].text.strip().replace(",", ""))
 				result['serviceFee'].append(serviceFee_group[j].text.strip().replace(",", ""))
-				result['roomMin'].append(roomMin_group[j].text.strip())
 				result['partArea'].append(partArea_group[j].text.strip())
-				result['mPrice'].append(mPrice_group[j].text.strip().replace(",", ""))
-				result['averPrice'].append(averPrice_group[j].text.strip().replace(",", ""))
-				result['name'].append(name_group[j].text)
+				if (currentPropertyType == '賃貸土地'):
+					result['name'].append("") 
+				else:
+					result['name'].append(name_group[j].text)
+
 				result['station'].append(station_group[j].text)
 				result['trade'].append(trade_group[j].text)
 				result['phone'].append(phone_group[j].text)
-				result['floorPlan'].append(floorPlan_group[j].text)
+				if (currentPropertyType == '賃貸土地' or currentPropertyType == '賃貸外全(住宅以外建物全部)'):
+					result['floorPlan'].append("")
+				else:
+					result['floorPlan'].append(floorPlan_group[j].text)
+				# result['roomMin'].append(roomMin_group[j].text.strip())
+				# result['mPrice'].append(mPrice_group[j].text.strip().replace(",", ""))
+				# result['averPrice'].append(averPrice_group[j].text.strip().replace(",", ""))
 
 			nextButton = driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Go to next page"]')
 			nextButton.click()
 			expected_text = str(i*50 + 1)
 			print(i,"clicked")
-			time.sleep(8)
 
 			# WebDriverWait(driver, delay).until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition2}"]'), expected_text))
 		
@@ -252,12 +294,12 @@ def postContact(request):
 		userId = form["userId"].value() 
 		password = form["password"].value()
 		propertyType1 = form["propertyType1"].value()
-		propertyType2 = form["propertyType2"].value()
+		# propertyType2 = form["propertyType2"].value()
 		trackName = form["trackName"].value()
 		stationFrom = form["stationFrom"].value()
 		stationTo = form["stationTo"].value()
 		distance = form["distance"].value()
-		distanceType = form["distanceType"].value()
+		distanceType = '1'
 		priceMin = form["priceMin"].value()
 		priceMax = form["priceMax"].value()
 		areaMin = form["areaMin"].value()
@@ -266,14 +308,14 @@ def postContact(request):
 		roomMin = form["roomMin"].value()
 		etc_multi = form["etc_multi"].value() 
 	
-		res = scraping(userId, password, propertyType1, propertyType2, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi)
+		res = scraping(userId, password, propertyType1, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi)
 		# form.save()
 		print("protpertyType1", propertyType1)
-		print("protpertyType2", propertyType2)
+		# print("protpertyType2", propertyType2)
 		if res == '500OverError' or res == 'loginError' or res == 'Error' or res == 'noElement':
-			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'propertyType2' : propertyType2, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'roomMin' : roomMin, 'etc_multi' : etc_multi})
+			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'etc_multi' : etc_multi})
 		else:
-			return render(request, "map.html", {'map_data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'propertyType2' : propertyType2, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'roomMin' : roomMin, 'etc_multi' : etc_multi})
+			return render(request, "map.html", {'map_data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'etc_multi' : etc_multi})
 
 			# return JsonResponse({"success": res}, status=200)
 	return JsonResponse({"success":False}, status=400)

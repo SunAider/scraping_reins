@@ -14,20 +14,20 @@ class Contact(models.Model):
         (5, '賃貸外一(住宅以外建物一部)'),
 	]
 	propertyType1 = models.IntegerField(choices=propertyType_Options, default='2', blank=False)	
-	propertyType2 = models.IntegerField(choices=propertyType_Options, default='3', blank=False)	
+	# propertyType2 = models.IntegerField(choices=propertyType_Options, default='3', blank=False)	
 	trackName = models.CharField(max_length=50)
 	stationFrom = models.CharField(max_length=50, blank=True)
 	stationTo = models.CharField(max_length=50, blank=True)
 	distance = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-	distanceType_Options = [
-		(1, '分'),
-        # (2, 'ｍ'),
-	]
-	distanceType = models.IntegerField(choices=distanceType_Options, default='1', blank=False)	
+	# distanceType_Options = [
+	# 	(1, '分'),
+    #     # (2, 'ｍ'),
+	# ]
+	# distanceType = models.IntegerField(choices=distanceType_Options, default='1', blank=False)	
 	priceMin = models.DecimalField(max_digits=10, decimal_places=1, blank=True)
 	priceMax = models.DecimalField(max_digits=10, decimal_places=1, blank=True)
-	roomMin = models.DecimalField(max_digits=2, decimal_places = 0, blank=True)
 	areaMin = models.DecimalField(max_digits=10, decimal_places=1, blank=True)
+	roomMin = models.DecimalField(max_digits=2, decimal_places = 0, blank=True)
 	level = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
 	built_year = models.DecimalField(max_digits=4, decimal_places = 0, blank=True)
 	# etc = models.TextField(blank=True)

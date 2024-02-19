@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block head %}
-<title>不動産情報取得</title>
+<title>GoogleMap</title>
 {% endblock %}
 {% block style %}
 {% endblock %}
@@ -29,10 +29,7 @@
 		border-radius: 10px;
 		padding: 1%;
 		font-size: 0.8rem;
-		max-width: 45%;
-		max-height: 60%;
-		overflow: auto;
-		padding: 1rem;
+		max-width: 60%;
 	}
 
 	.infobody p {
@@ -48,7 +45,6 @@
 		padding: 10px;
 		border: 1px solid #ccc;
 		font-size: 0.8rem;
-		max-width: 45%;
 	}
 
 	#infoDiv p {
@@ -101,10 +97,6 @@
 
 	.keySpan {
 		font-weight: bold;
-	}
-
-	#closeBtn {
-		float: right;
 	}
 </style>
 
@@ -214,14 +206,7 @@
 								content += getMarkerContent(index);
 							});
 							// showInfoWindow(content, location);
-							var customInfowindow= $('#custom-infowindow');
-							customInfowindow.css('display', 'block');
 							customWindow.innerHTML = content
-							$('#closeBtn').click(function (e) {
-								console.log("clsoeBtn clicked");
-								customInfowindow.css('display', 'none');
-							})
-
 						});
 					} else {
 						console.error('Geocode was not successful for the following reason:', status);
@@ -244,7 +229,6 @@
 					+ '<p>' + station_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
 					+ '<p>' + trade_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
 					+ '<p>' + phone_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-					+ '<button id="closeBtn">非表示</button>'
 					+ '</div></div><br>';
 			}
 		}
@@ -260,14 +244,15 @@
 		console.log("''''''''");
 
 		var propertyType1 = "{{propertyType1}}";
-		// var propertyType2 = "{{propertyType2}}";
+		var propertyType2 = "{{propertyType2}}";
 		console.log("propertyType1", propertyType1);
-		// console.log("propertyType2", propertyType2);
-		var propertyOptions = ['', '賃貸土地', '賃貸一戸建', "賃貸マンション", '賃貸外全(住宅以外建物全部)', '賃貸外一(住宅以外建物一部)'];
+		console.log("propertyType2", propertyType2);
+		var propertyOptions = ['賃貸土地', '賃貸一戸建', "賃貸マンション", '賃貸外全(住宅以外建物全部)', '賃貸外一(住宅以外建物一部)'];
 		var trackName = "{{trackName}}";
 		var stationFrom = "{{stationFrom}}";
 		var stationTo = "{{stationTo}}";
 		var distance = "{{distance}}";
+		var distanceType = "{{distanceType}}";
 		var priceMin = "{{priceMin}}";
 		var priceMax = "{{priceMax}}";
 		var areaMin = "{{areaMin}}";
@@ -294,18 +279,19 @@
 		console.log("matchedOptions: ", matchedOptions);
 
 		var content = "<p><span class='keySpan'>物件種別１: </span>" + propertyOptions[propertyType1] + "</p>" +
-			// "<p><span class='keySpan'> 物件種別 2: </span>" + propertyOptions[propertyType2] + "</p>" +
+			"<p><span class='keySpan'> 物件種別 2: </span>" + propertyOptions[propertyType2] + "</p>" +
 			"<p><span class='keySpan'>沿線１/沿線名: </span>" + trackName + "</p>" +
 			"<p><span class='keySpan'>駅名(From): </span>" + stationFrom + "</p>" +
 			"<p><span class='keySpan'>駅名(To): </span>" + stationTo + "</p>" +
 			"<p><span class='keySpan'>駅から徒歩(分以内): </span>" + distance + "</p>" +
+			"<p><span class='keySpan'>以内: </span>" + distanceType + "</p>" +
 			"<p><span class='keySpan'>賃料(Min)万円: </span>" + priceMin + "</p>" +
 			"<p><span class='keySpan'>賃料(Max)万円: </span>" + priceMax + "</p>" +
-			"<p><span class='keySpan'>建物使用部分面積(Min): </span>" + roomMin + "</p>" +
 			"<p><span class='keySpan'>間取部屋数(Min): </span>" + areaMin + "</p>" +
+			"<p><span class='keySpan'>建物使用部分面積(Min): </span>" + roomMin + "</p>" +
 			"<p><span class='keySpan'>所在階: </span>" + level + "</p>" +
 			"<p><span class='keySpan'>築年(Min)西暦: </span>" + built_year + "</p>" +
-			"<p><span class='keySpan'>設備・条件・住宅性能等: </span>" + "<br>" + " <span style='margin-left: 1rem;'> " + matchedOptions + "</span></p>"
+			"<p><span class='keySpan'>設備・条件・住宅性能等: </span>" + "<br>" + " <span style='margin-left: 3rem;'> " + matchedOptions + "</span></p>"
 			;
 		var infoDiv = $('#infoDiv');
 		infoDiv.html(content);
@@ -320,7 +306,6 @@
 				$(this).text("Show");
 			}
 		})
-
 	})
 </script>
 {% endblock %}
