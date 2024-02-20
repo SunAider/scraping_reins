@@ -42,7 +42,7 @@
 	#infoDiv {
 		display: none;
 		position: absolute;
-		top: 7rem;
+		top: 10rem;
 		right: 10px;
 		background-color: white;
 		padding: 10px;
@@ -55,7 +55,7 @@
 		margin-bottom: 0.2rem;
 	}
 
-	#showButton {
+	#backButton {
 		/* display: none; */
 		position: absolute;
 		top: 4rem;
@@ -67,8 +67,38 @@
 		align-items: center;
 	}
 
+	#showButton {
+		/* display: none; */
+		position: absolute;
+		top: 7rem;
+		right: 10px;
+		width: 4rem;
+		height: 2.5rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.cute-back-button {
+		/* padding: 10px 20px; */
+		font-size: 16px;
+		border: none;
+		border-radius: 20px;
+		/* Rounded corners */
+		background-color: #4CAF50;
+		/* Green background */
+		color: #fff;
+		/* White text */
+		box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+		/* Soft shadow */
+		cursor: pointer;
+		outline: none;
+		transition: transform 0.2s ease-in-out;
+		/* Smooth transform animation */
+	}
+
 	.cute-green-button {
-		padding: 10px 20px;
+		/* padding: 10px 20px; */
 		font-size: 16px;
 		border: none;
 		border-radius: 20px;
@@ -102,8 +132,11 @@
 	.keySpan {
 		font-weight: bold;
 	}
-
-	#closeBtn {
+	.cnt {
+		color: blue;
+		font-weight: bold;
+	}
+	.closeBtn {
 		float: right;
 	}
 </style>
@@ -111,7 +144,8 @@
 <div class="">
 	<div id="map"></div>
 	<div id="custom-infowindow"></div>
-	<button id="showButton" class="cute-green-button">Show</button>
+	<button id="backButton" class="cute-back-button">戻る</button>
+	<button id="showButton" class="cute-green-button">表示</button>
 	<div id="infoDiv">
 		<!-- Content to display in the div -->
 		<p>Some information goes here...</p>
@@ -120,6 +154,7 @@
 		async defer></script>
 	<!-- <script	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1hbsbaB_Vahn0RbvEhCTG18Xt8kw-aIk&libraries=places&loading=async"></script> -->
 	<script>
+		localStorage.setItem("flag", "1");
 		var type_data_str = "{{ map_data.type }}";
 		var rent_data_str = "{{ map_data.rent }}";
 		var manageFee_data_str = "{{ map_data.manageFee }}";
@@ -169,7 +204,7 @@
 		console.log("==addressData==", address_data);
 		console.log("==addressToMarkers===");
 		console.log(addressToMarkers);
-
+		var cnt = address_data.length;
 		function initMap() {
 			var map = new google.maps.Map(document.getElementById('map'), {
 				// center: { lat: 35.661777, lng: 139.704051 }, // Center the map at a specific location
@@ -217,7 +252,7 @@
 							var customInfowindow= $('#custom-infowindow');
 							customInfowindow.css('display', 'block');
 							customWindow.innerHTML = content
-							$('#closeBtn').click(function (e) {
+							$('.closeBtn').click(function (e) {
 								console.log("clsoeBtn clicked");
 								customInfowindow.css('display', 'none');
 							})
@@ -244,7 +279,7 @@
 					+ '<p>' + station_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
 					+ '<p>' + trade_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
 					+ '<p>' + phone_data[index].replace(/&#39;/g, '').replace(/[\[\]]/g, "") + '</p>'
-					+ '<button id="closeBtn">非表示</button>'
+					+ '<button class="closeBtn">非表示</button>'
 					+ '</div></div><br>';
 			}
 		}
@@ -276,7 +311,7 @@
 		var roomMin = "{{roomMin}}";
 		var etc_multi = "{{etc_multi}}";
 		console.log("etc_multi: ", etc_multi);
-		var etc_multi_options = ['ペット相談', '事務所使用可', 'エレベーター'];
+		var etc_multi_options = ['ペット相談', '事務所使用可', 'エレベータ'];
 		var matchedOptions = [];
 
 		etc_multi_arr = JSON.parse(etc_multi.replace(/&#39;/g, ""));
@@ -305,7 +340,8 @@
 			"<p><span class='keySpan'>間取部屋数(Min): </span>" + areaMin + "</p>" +
 			"<p><span class='keySpan'>所在階: </span>" + level + "</p>" +
 			"<p><span class='keySpan'>築年(Min)西暦: </span>" + built_year + "</p>" +
-			"<p><span class='keySpan'>設備・条件・住宅性能等: </span>" + "<br>" + " <span style='margin-left: 1rem;'> " + matchedOptions + "</span></p>"
+			"<p><span class='keySpan'>設備・条件・住宅性能等: </span>" + "<br>" + " <span style='margin-left: 1rem;'> " + matchedOptions + "</span></p>" + 
+			"<br><p class='cnt'><span class='keySpan'>"+ propertyOptions[propertyType1] + ": </span>" + cnt + "件</p>" 
 			;
 		var infoDiv = $('#infoDiv');
 		infoDiv.html(content);
@@ -314,11 +350,15 @@
 			console.log("clicked");
 			if (infoDiv.css('display') === 'none') {
 				infoDiv.css('display', 'block');
-				$(this).text("Hide");
+				$(this).text("非表示");
 			} else {
 				infoDiv.css('display', 'none');
-				$(this).text("Show");
+				$(this).text("表示");
 			}
+		})
+		$('#backButton').click(function () {
+			console.log("backBtn clicked");
+			window.location.href = "/";
 		})
 
 	})

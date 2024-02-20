@@ -11,11 +11,15 @@
 	</div>
 	<div class="row justify-content-center align-items-center" style="padding-bottom: 5rem;">
 		<div class="col-sm-6 ">
-			<form id="contactForm" action="/mapData" method="POST" onsubmit="return submitForm();">{% csrf_token %}
+			<!-- <form id="contactForm" action="/mapData" method="POST" autocomplete="off"  onsubmit="return submitForm();">{% csrf_token %} -->
+			<form action="/mapData" method="POST" autocomplete="off">
+				{% csrf_token %}
 				{{ contactForm.as_p }}
-				<input type="submit" name="contact-submit" style="display:none;" id="submit" value="送信" class="btn btn-primary submitBtn" />
+				<input type="hidden" name="next" value="{{ request.path }}">
+				<input type="button" name="contact-submit" style="display:none;" id="submitBtn" value="送信"
+					class="btn btn-primary submitBtn" autocomplete="off" />
 			</form>
-			<button class="fillBtn" onclick="handleFillBtnClick()"> 一部の値を変えて再検索する</button>
+			<button class="fillBtn" onclick="handleFillBtnClick()"> 最後に入力した内容を再表示</button>
 		</div>
 	</div>
 	<div id="loading-icon" style="display: none;" class="loading">
@@ -188,6 +192,7 @@
 		border-radius: 10px;
 		float: right;
 	}
+
 	.submitBtn {
 		background-color: blue;
 		/* Green */
@@ -207,7 +212,7 @@
 {% endblock %}
 {% block script %}
 <!-- <script src="sample.js"></script> -->
-<script type="text/javascript">
+<script>
 
 	// Show loading icon when a link is clicked
 	function showLoadingIcon() {
@@ -324,12 +329,44 @@
 		}
 	}
 
-	function submitForm() {
-		SaveFormData();
-		showLoadingIcon();
-		console.log("submit clicked");
-		document.getElementById('contactForm').submit();
-		return false;
+	function clearForm() {
+		console.log("clear form");
+
+		var userIdInput = document.getElementsByName("userId")[0];
+		var passwordInput = document.getElementsByName("password")[0];
+		var propertyType1Input = document.getElementsByName("propertyType1")[0];
+		// var propertyType2Input = document.getElementsByName("propertyType2")[0];
+		var trackNameInput = document.getElementsByName("trackName")[0];
+		var stationFromInput = document.getElementsByName("stationFrom")[0];
+		var stationToInput = document.getElementsByName("stationTo")[0];
+		var distanceInput = document.getElementsByName("distance")[0];
+		var priceMinInput = document.getElementsByName("priceMin")[0];
+		var priceMaxInput = document.getElementsByName("priceMax")[0];
+		var areaMinInput = document.getElementsByName("areaMin")[0];
+		var levelInput = document.getElementsByName("level")[0];
+		var built_yearInput = document.getElementsByName("built_year")[0];
+		var roomMinInput = document.getElementsByName("roomMin")[0];
+		var etc_multiInput_1 = document.getElementsByName("etc_multi")[1];
+		var etc_multiInput_2 = document.getElementsByName("etc_multi")[2];
+		var etc_multiInput_3 = document.getElementsByName("etc_multi")[3];
+
+		userIdInput.value = "";
+		passwordInput.value = "";
+		propertyType1Input.value = 2;
+		// propertyType2Input.value = propertyType2;
+		trackNameInput.value = "";
+		stationFromInput.value = "";
+		stationToInput.value = "";
+		distanceInput.value = "";
+		priceMinInput.value = "";
+		priceMaxInput.value = "";
+		areaMinInput.value = "";
+		levelInput.value = "";
+		built_yearInput.value = "";
+		roomMinInput.value = "";
+		etc_multiInput_1.checked = false;
+		etc_multiInput_2.checked = false;
+		etc_multiInput_3.checked = false;
 	}
 
 	function handleFillBtnClick() {
@@ -341,16 +378,13 @@
 	window.onload = function () {
 		console.log("window onload");
 		document.getElementById('loading-icon').style.display = 'none';
+		clearForm();
 	};
-
-	// window.addEventListener('unload', function (event) {
-	// 	localStorage.clear();
-	// 	console.log("cleared");
-	// });
 
 	$(document).ready(function () {
 
-		$("#submit").hide();
+		$("#submitBtn").hide();
+		$(".fillBtn").hide();
 		$("#id_etc_multi_0").hide();
 		var res = "{{data}}";
 		if (res == "500OverError") {
@@ -371,9 +405,10 @@
 			alert("ただいまREINSサービス提供を停止しております。");
 			window.location.href = '/'
 		} else {
-			$("#submit").show();
+			$("#submitBtn").show();
+			$(".fillBtn").show();
 		}
-	
+
 		// 
 		var inputElement = document.getElementById("id_priceMax");
 		inputElement.addEventListener("input", function (event) {
@@ -386,39 +421,18 @@
 		});
 
 
+		$("[name = 'contact-submit']").click(function (e) {
 
-
-
-		// $("#contactForm").submit(function (e) {
-		// e.preventDefault();
-		// 	var serializedData = $(this).serialize();
-		// 	console.log("formData", serializedData);
-		// 	$.ajax({
-		// 		type: 'POST',
-		// 		url: "{% url 'contact_submit' %}",
-		// 		data: serializedData,
-		// 		success: function (response) {
-		// 			// $("#contactForm")[0].reset();
-		// 			var result = response.success
-		// 			console.log(result)
-		// 			if (result == "500OverError") {
-		// 				alert("500 OVer Error!");
-		// 			} else if (result == "loginError") {
-		// 				alert("Login Error!");
-		// 			} else {
-		// 				console.log(result);
-		// 				window.location.href = "/map?data=" + (result);
-		// 			}
-		// 			// const resultObj = JSON.parse(response)
-		// 			// result = response.succeess
-		// 			var stringsArray = result.split(',');
-		// 			console.log(stringsArray);
-		// 		},
-		// 		error: function (response) {
-		// 			console.log(response)
-		// 		}
-		// 	})
-		// })
+			e.preventDefault();
+			SaveFormData();
+			showLoadingIcon();
+			console.log("submit clicked");
+			history.back();
+			// document.getElementById('contactForm').submit();
+			sessionStorage.clear();
+			$("form").submit();
+			// return false;
+		});
 
 	})
 </script>

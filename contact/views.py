@@ -16,6 +16,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
+from django.views.decorators.cache import cache_control
+@cache_control(no_cache=True, must_revalidate=True)
 # Create your views here.
 
 def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi):	
@@ -67,7 +69,13 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 		driver.quit()
 		return "loginError"
 	# 3rd page
-	WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__140")).is_displayed()  
+	try:
+		WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__140")).is_displayed()  
+	except TimeoutException:
+		print("loginError_140")
+		driver.close()
+		driver.quit()
+		return "loginError"
 	select = Select(driver.find_element(By.ID, '__BVID__140'))
 	select.select_by_index(int(propertyType1))
 	# select = Select(driver.find_element(By.ID, '__BVID__149'))
