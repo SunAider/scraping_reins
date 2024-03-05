@@ -49,17 +49,12 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 
 	# login
 	try:
-		# WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__13")).is_displayed()  
-		WebDriverWait(driver, delay).until(
-			EC.visibility_of_element_located((By.XPATH, "//span[@class='p-label-title' and contains(text(), 'ユーザID')]"))
-		)
+		WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__13")).is_displayed()  
 	except TimeoutException as ex:
 		print("Error")
 		driver.close()
 		driver.quit()
-		return {"error": "Error"}
-
-	# get IDs of id and password input on login page
+		return "Error"
 	html = driver.page_source.encode('utf-8')
 	soup = BeautifulSoup(html, "html.parser")   
 	id_pwd_elements = soup.find_all('input', class_='p-textbox-input form-control')
@@ -67,39 +62,54 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 	pwdElement_id = id_pwd_elements[1].get('id')
 	print("idElement id: ", idElement_id)
 	print("pwdElement_id: ", pwdElement_id)
-
-	# input id and password on login page
 	driver.find_element(By.ID, idElement_id).send_keys(id)
 	driver.find_element(By.ID, pwdElement_id).send_keys(passwd)
 	driver.find_element(By.XPATH, './/*[@class="p-checkbox-input custom-control custom-checkbox b-custom-control-lg"]').click()
 	driver.find_element(By.XPATH, './/*[@class="btn p-button p-3 large btn-primary btn-block px-0"]').click()
-
+	print("Test 0.5")
+	time.sleep(5)
 	# 2nd page
 	try:
 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), '賃貸 物件検索')]"))).click()
 	except TimeoutException:
-		print("loginError")
+		print("loginError?")
 		driver.close()
 		driver.quit()
-		return {"error": "loginError"}
-
+		return "loginError"
+	print("Test1.0")
 	# 3rd page
 	try:
-		WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__140")).is_displayed()  
+		# WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__140")).is_displayed()  
+		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '検索')]")))
+
 	except TimeoutException:
-		print("loginError")
+		print("loginError_140")
 		driver.close()
 		driver.quit()
-		return {"error": "loginError"}
+		return "loginError"
 	
-	# get IDs for input values on main filter page
+	propertyType1_id = ""
+	propertyType2_id = ""
+	trackName_id = ""
+	stationTo_id = ""
+	distanceType_id = ""
+	priceMax_id = ""
+	areaMin_id = ""
+	roomMin_id = ""
+	levelMax_id = ""
+	builtYear_id = ""
+
 	try: 
+		print("---------------------------")
 		html = driver.page_source.encode('utf-8')
 		soup = BeautifulSoup(html, "html.parser")   
+		with open("log.txt", "w") as file:
+			file.write(str(soup))
 
 		propertyType1_elements = soup.find_all('span', class_='p-label-title', text='物件種別１')
 		propertyType1_element = propertyType1_elements[0].find_parent('div').find_parent('div').find('select')
 		propertyType1_id = propertyType1_element.get('id')
+		print("---------------------------")
 
 		propertyType2_elements = soup.find_all('span', class_='p-label-title', text='物件種別２')
 		propertyType2_element = propertyType2_elements[0].find_parent('div').find_parent('div').find('select')
@@ -141,14 +151,13 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 		builtYear_element = builtYear_elements[0].find_parent('div').find_parent('div').find('select')
 		builtYear_id = builtYear_element.get('id')
 
-		# for debug
-		# with open("log.txt", "w") as file:
-		# 	file.write(str(distance_element))
+		
+		priceMin_id = priceMinMax_elements[0].get('id')
 		print("ID : ", propertyType1_id, propertyType2_id, trackName_id, stationFrom_id, stationTo_id, distance_id, distanceType_id, priceMin_id, priceMax_id, areaMin_id, roomMin_id, levelMax_id, builtYear_id)
 	
 	except Exception as ex:
-		print("error while getting IDs")
 		print(ex.__str__)
+		print("error while getting IDs")
 
 	select = Select(driver.find_element(By.ID, propertyType1_id))
 	select.select_by_index(int(propertyType1))
@@ -185,6 +194,8 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 				print("length: ", len(multiElement))
 				try:
 					driver.execute_script("arguments[0].scrollIntoView(true);", multiElement[9])
+					# driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+					# multiElement = WebDriverWait(driver, delay).until(EC.visibility_of_all_elements_located((By.XPATH, "//button[contains(text(), '入力ガイド')]")))
 					multiElement[9].click()
 				except Exception as ex:
 					print(ex.__str__)
@@ -221,7 +232,7 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 						print("500 over Error")
 						driver.close()
 						driver.quit()
-						return {"error": "500OverError"}
+						return "500OverError"
 			else:
 				print("Not enough elements found")
 			print("multiElement end")
@@ -229,7 +240,7 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 			driver.close()
 			driver.quit()
 			print("500OverError")
-			return {"error": "500OverError"}		
+			return "500OverError"		
 	print("test1.4")
 
 	propertyType_options = [
@@ -257,10 +268,10 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 			driver.quit()
 			if (confirmElement):
 				print("500 over Error")
-				return {"error": "500OverError"}
+				return "500OverError"
 		except Exception as ex:
 			print("noElementsss", str(ex))
-			return {"error": "noElement"}
+			return "noElement"
 	print("test2")
 	# getting result
 	try:
@@ -272,87 +283,89 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 			locator = (By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition}"]')
 			try:
 				WebDriverWait(driver, delay).until(EC.presence_of_element_located(locator))
+				html = driver.page_source.encode('utf-8')
+				soup = BeautifulSoup(html, "html.parser")        
+				divs_with_role_tabpanel = soup.find_all("div", {"role": "tabpanel", "style": ""})
+				second_div = None
+				second_div = divs_with_role_tabpanel[0]
+
+				#  物件種目
+				type_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 5 / span 6;")  
+				# 賃料
+				rent_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 5 / span 3;")
+				# 管理費
+				manageFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 5 / span 3;")
+				# 共益費
+				serviceFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 4; grid-column: 5 / span 3;")
+				# 使用部分面積, 土地面積
+				partArea_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 11 / span 3;")
+				# 間取
+				floorPlan_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 23 / span 2;")
+				# 所在地
+				address_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 14 / span 11;")
+				# 建物名
+				if (currentPropertyType == '賃貸一戸建'):
+					name_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 14 / span 9;")
+				else:
+					name_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 14 / span 5;")
+				
+				# 沿線駅
+				station_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 14 / span 5;")
+				# 商号
+				trade_group = second_div.find_all("span", class_='d-sm-none')
+				# 電話番号
+				phone_group = second_div.find_all('span', class_='')
+
+				# 築年月
+				# roomMin_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 5 / span 9;")
+				# ㎡単価
+				# mPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 11 / span 3;")			
+				# 坪単価
+				# averPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 11 / span 3;")
+				
+				print("address len: ", len(address_group))
+				print("trade len: ", len(trade_group))
+				print("phone len: ", len(phone_group))
+
+				for j in range(len(address_group)):
+					result['address'].append(address_group[j].text.strip())
+					result['type'].append(type_group[j].text.strip())
+					result['rent'].append(rent_group[j].text.strip().replace(",", ""))
+					result['manageFee'].append(manageFee_group[j].text.strip().replace(",", ""))
+					result['serviceFee'].append(serviceFee_group[j].text.strip().replace(",", ""))
+					result['partArea'].append(partArea_group[j].text.strip())
+					if (currentPropertyType == '賃貸土地'):
+						result['name'].append("") 
+					else:
+						result['name'].append(name_group[j].text)
+
+					result['station'].append(station_group[j].text)
+					result['trade'].append(trade_group[j].text)
+					result['phone'].append(phone_group[j].text)
+					if (currentPropertyType == '賃貸土地' or currentPropertyType == '賃貸外全(住宅以外建物全部)'):
+						result['floorPlan'].append("")
+					else:
+						result['floorPlan'].append(floorPlan_group[j].text)
+					# result['roomMin'].append(roomMin_group[j].text.strip())
+					# result['mPrice'].append(mPrice_group[j].text.strip().replace(",", ""))
+					# result['averPrice'].append(averPrice_group[j].text.strip().replace(",", ""))
+
+				nextButton = driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Go to next page"]')
+				nextButton.click()
+				expected_text = str(i*50 + 1)
+				print(i,"clicked")
+
+				# WebDriverWait(driver, delay).until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition2}"]'), expected_text))
+			
 			except TimeoutException:
 				print("Element not found within specified timeout")
-				return {"error": "noElement"}
-			except Exception as e :
-				print("An error occured:", e)
-				return {"error":  "Error"}
-			html = driver.page_source.encode('utf-8')
-			soup = BeautifulSoup(html, "html.parser")        
-			divs_with_role_tabpanel = soup.find_all("div", {"role": "tabpanel", "style": ""})
-			second_div = None
-			second_div = divs_with_role_tabpanel[0]
-
-			#  物件種目
-			type_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 5 / span 6;")  
-			# 賃料
-			rent_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 5 / span 3;")
-			# 管理費
-			manageFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 5 / span 3;")
-			# 共益費
-			serviceFee_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 4; grid-column: 5 / span 3;")
-			# 使用部分面積, 土地面積
-			partArea_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 11 / span 3;")
-			# 間取
-			floorPlan_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 23 / span 2;")
-			# 所在地
-			address_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 1; grid-column: 14 / span 11;")
-			# 建物名
-			if (currentPropertyType == '賃貸一戸建'):
-				name_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 14 / span 9;")
-			else:
-				name_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 14 / span 5;")
-			
-			# 沿線駅
-			station_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 14 / span 5;")
-			# 商号
-			trade_group = second_div.find_all("span", class_='d-sm-none')
-			# 電話番号
-			phone_group = second_div.find_all('span', class_='')
-
-			# 築年月
-			# roomMin_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 5; grid-column: 5 / span 9;")
-			# ㎡単価
-			# mPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 2; grid-column: 11 / span 3;")			
-			# 坪単価
-			# averPrice_group = second_div.find_all("div", class_='p-table-body-item', style="grid-row-start: 3; grid-column: 11 / span 3;")
-			
-			print("address len: ", len(address_group))
-			print("trade len: ", len(trade_group))
-			print("phone len: ", len(phone_group))
-
-			for j in range(len(address_group)):
-				result['address'].append(address_group[j].text.strip())
-				result['type'].append(type_group[j].text.strip())
-				result['rent'].append(rent_group[j].text.strip().replace(",", ""))
-				result['manageFee'].append(manageFee_group[j].text.strip().replace(",", ""))
-				result['serviceFee'].append(serviceFee_group[j].text.strip().replace(",", ""))
-				result['partArea'].append(partArea_group[j].text.strip())
-				if (currentPropertyType == '賃貸土地'):
-					result['name'].append("") 
-				else:
-					result['name'].append(name_group[j].text)
-
-				result['station'].append(station_group[j].text)
-				result['trade'].append(trade_group[j].text)
-				result['phone'].append(phone_group[j].text)
-				if (currentPropertyType == '賃貸土地' or currentPropertyType == '賃貸外全(住宅以外建物全部)'):
-					result['floorPlan'].append("")
-				else:
-					result['floorPlan'].append(floorPlan_group[j].text)
-				# result['roomMin'].append(roomMin_group[j].text.strip())
-				# result['mPrice'].append(mPrice_group[j].text.strip().replace(",", ""))
-				# result['averPrice'].append(averPrice_group[j].text.strip().replace(",", ""))
-
-			nextButton = driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Go to next page"]')
-			nextButton.click()
-			expected_text = str(i*50 + 1)
-			print(i,"clicked")
-
-			# WebDriverWait(driver, delay).until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, f'div.p-table-body-item[style="{style_condition2}"]'), expected_text))
+				return "noElement"
+			except Exception as e:
+				print("An error occured:", str(e))
+				return "Error"
 	except NoSuchElementException as e:
 		print("noElement")
+		# return "Error"
 	# resultString = ','.join(result)	
 	driver.close()
 	driver.quit()
@@ -387,11 +400,13 @@ def postContact(request):
 		built_year = form["built_year"].value()
 		roomMin = form["roomMin"].value()
 		etc_multi = form["etc_multi"].value() 
+	
 		res = scraping(userId, password, propertyType1, trackName, stationFrom, stationTo, distance, distanceType, priceMin, priceMax, areaMin, level, built_year, roomMin, etc_multi)
-
+		# form.save()
+		print("protpertyType1", propertyType1)
 		# print("protpertyType2", propertyType2)
-		if "error" in res and (res['error'] == '500OverError' or res['error']  == 'loginError' or res['error']  == 'Error' or res['error']  == 'noElement'):
-			return render(request, "contact.html", {'data' : res['error'], 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'etc_multi' : etc_multi})
+		if res == '500OverError' or res == 'loginError' or res == 'Error' or res == 'noElement':
+			return render(request, "contact.html", {'data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'etc_multi' : etc_multi})
 		else:
 			return render(request, "map.html", {'map_data' : res, 'userId' : userId, 'password': password, 'propertyType1' : propertyType1, 'trackName' : trackName, 'stationFrom' : stationFrom, 'stationTo' : stationTo, 'distance' : distance, 'distanceType' : distanceType, 'priceMin' : priceMin, 'priceMax' : priceMax, 'areaMin' : areaMin, 'level' : level, 'built_year' : built_year, 'etc_multi' : etc_multi})
 
