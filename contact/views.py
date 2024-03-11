@@ -42,10 +42,23 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 	# user info
 	id = userId
 	passwd = password
-	delay = 10 #seconds
+	delay = 15 #seconds
 	style_condition = 'grid-row-start: 1; grid-column: 14 / span 11;'
 	style_condition2 = 'grid-row: 1 / span 2; grid-column-start: 1;'
 	result = {'address':[], 'type':[], 'rent':[], 'manageFee':[],'serviceFee':[],'roomMin':[],'partArea':[],'mPrice':[],'averPrice':[],'name':[],'station':[],'trade':[],'phone':[], 'floorPlan':[]}
+	propertyType1_id = ""
+	propertyType2_id = ""
+	trackName_id = ""
+	stationFrom_id = ""
+	stationTo_id = ""
+	distance_id = ""
+	distanceType_id = ""
+	priceMin_id = ""
+	priceMax_id = ""
+	areaMin_id = ""
+	roomMin_id = ""
+	levelMax_id = ""
+	builtYear_id = ""
 
 	# login
 	try:
@@ -76,7 +89,9 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 
 	# 2nd page
 	try:
+		print("logged in")
 		WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), '賃貸 物件検索')]"))).click()
+
 	except TimeoutException:
 		print("loginError")
 		driver.close()
@@ -84,13 +99,15 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 		return {"error": "loginError"}
 
 	# 3rd page
-	try:
-		WebDriverWait(driver, delay).until(lambda s: s.find_element(By.ID, "__BVID__140")).is_displayed()  
-	except TimeoutException:
-		print("loginError")
-		driver.close()
-		driver.quit()
-		return {"error": "loginError"}
+	time.sleep(5)
+	# try:
+	# 	WebDriverWait(driver, delay).until(EC.visibility_of_all_elements_located((By.XPATH, "//button[contains(text(), '検索')]")))
+
+	# except TimeoutException:
+	# 	print("loginError")
+	# 	driver.close()
+	# 	driver.quit()
+	# 	return {"error": "loginError"}
 	
 	# get IDs for input values on main filter page
 	try: 
@@ -100,6 +117,8 @@ def scraping(userId, password, propertyType1, trackName, stationFrom, stationTo,
 		propertyType1_elements = soup.find_all('span', class_='p-label-title', text='物件種別１')
 		propertyType1_element = propertyType1_elements[0].find_parent('div').find_parent('div').find('select')
 		propertyType1_id = propertyType1_element.get('id')
+		print("propertyType")
+		print("propertyType1_id", propertyType1_id)
 
 		propertyType2_elements = soup.find_all('span', class_='p-label-title', text='物件種別２')
 		propertyType2_element = propertyType2_elements[0].find_parent('div').find_parent('div').find('select')
